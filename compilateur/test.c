@@ -1,5 +1,5 @@
 int main () {
     int i;
 
-    return O;
+    return 0;
 }
