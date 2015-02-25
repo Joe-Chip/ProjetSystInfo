@@ -3,38 +3,52 @@
 
 %}
 
-%token tMAIN tCONST tINT tAO tAF tPO tPF tPV tID tVIRGULE 
-%token tNB
+%union {int nb; char* identificateur;}
+%token tMAIN tCONST tINT tPRINT tRETURN
+%token tAO tAF tPO tPF tPV tVIRGULE 
+%token <nb> tNB
+%token <identificateur> tID
 %token tADD tSUB tMUL tDIV tEGAL
-%token tRETURN
 %start Start
 
 %%
 
 Start :         Main
-Main :          tINT tMAIN tPO tPF tAO Corps Return tAF {printf("Sutallto\n");}
+Main :          tINT tMAIN tPO tPF tAO Corps Return tAF
               ;
-Corps :         Declarations Blocs {printf("My fat body is ready\n");}
-              | Declarations {printf("My body is ready\n");}
+Corps :         Declarations Instructions
+              | Declarations
               ;
-Declarations :  L_Decl Declarations {printf("DDDDs\n");}
-              | L_Decl {printf("D\n");}
+Declarations :  L_Decl Declarations 
+              | L_Decl
               ;
-L_Decl :        Type Seq_Decl tPV {printf("LD\n");}
-              ;
-Type :          tINT
-              | tCONST tINT
+L_Decl :        tCONST tINT Seq_Decl tPV {printf("LD\n");}
+              | tINT Seq_Decl tPV {printf("LD\n");}
               ;
 Seq_Decl :      Decl tVIRGULE Seq_Decl {printf("MutliD\n");}
               | Decl {printf("UniD\n");}
               ;
 Decl :          tID {printf("No Ini\n");}
-              | tID tEGAL tNB {printf("Ini\n");}
+              | tID tEGAL Expression {printf("Ini\n");}
               ;
-Blocs :         Bloc Blocs {printf("Blocs\n");}
-              | Bloc {printf("B\n");}
+Expression :    Facteur tADD Facteur
+              | Facteur tSUB Facteur
+              | Facteur
               ;
-Bloc :          tPV
+Facteur :       Expression tMUL Expression
+              | Expression tDIV Expression
+              | tID
+              | tNB
+              ;
+Instructions :  Instruction Instructions {printf("Blocs\n");}
+              | Instruction {printf("B\n");}
+              ;
+Instruction :   Affectation
+              | Print
+              ;
+Affectation :   tID tEGAL Expression tPV
+              ;
+Print :         tPRINT tPO tPF tPV
               ;
 Return :        tRETURN tNB tPV {printf("Return\n");}
               ;
