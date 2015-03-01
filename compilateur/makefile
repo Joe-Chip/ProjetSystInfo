@@ -1,10 +1,10 @@
 default : lexgo
 all : lexgo
 
-clean : 
+clean :
 	rm lex.yy.c y.tab.* lexgo 
 
-lexgo : source.* table_symboles.*
+lexgo : source.* table_symboles.c
 	yacc -d source.y
 	lex source.l
-	gcc y.tab.c lex.yy.c -ll -o lexgo
+	gcc y.tab.c lex.yy.c table_symboles.c -ll -o $@

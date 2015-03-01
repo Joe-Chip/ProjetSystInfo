@@ -25,35 +25,61 @@ Corps :         Declarations Instructions
 Declarations :  L_Decl Declarations 
               | L_Decl
               ;
-L_Decl :        tCONST tINT Seq_Decl tPV 
-              | tINT Seq_Decl tPV 
+L_Decl :        tCONST tINT {type_courant = INT_CONST;} Seq_Decl tPV 
+              | tINT {type_courant = INT;} Seq_Decl tPV 
               ;
 Seq_Decl :      Decl tVIRGULE Seq_Decl 
               | Decl 
               ;
-Decl :          tID     {ts_create($1, , DEFAULT, , niveau_courant);}
+Decl :          tID     {printf("Creation\n");
+                         switch (type_courant)
+                         {
+                         case INT:
+                            ts_create($1, TYPE_INT,
+                                      VAR_NON_INIT, VAR_NON_CONST,
+                                      niveau_courant);
+                            break;
+                         case INT_CONST:
+                            ts_create($1, TYPE_INT,
+                                      VAR_NON_INIT, VAR_CONST,
+                                      niveau_courant);
+                            break;
+                         }}
               | tID tEGAL Expression
-                        {ts_create($1, , VAR_INIT, , niveau_courant);
-                         printf("COP %d %d\n", ts_addr($1), $3)}
+                        {printf("Creation_Ini\n");
+                         switch (type_courant)
+                         {
+                         case INT:
+                            ts_create($1, TYPE_INT,
+                                      VAR_INIT, VAR_NON_CONST,
+                                      niveau_courant);
+                            break;
+                         case INT_CONST:
+                            ts_create($1, TYPE_INT,
+                                      VAR_INIT, VAR_CONST,
+                                      niveau_courant);
+                            break;
+                         }
+                         printf("COP %d %d\n", ts_addr($1), $3);}
               ;
 Expression :    tPO Expression tPF
                         {$$ = $2;}      
-              | Facteur tADD Facteur    
-                        {printf("ADD %d %d %d", $1, $1, $3);
+              | Facteur tADD Expression    
+                        {printf("ADD %d %d %d\n", $1, $1, $3);
                          ts_delete_tmp();
                          $$ = $1;}
-              | Facteur tSUB Facteur
-                        {printf("SOU %d %d %d", $1, $1, $3);
+              | Facteur tSUB Expression
+                        {printf("SOU %d %d %d\n", $1, $1, $3);
                          ts_delete_tmp();
                          $$ = $1;}
               | Facteur {$$ = $1;}
               ;
 Facteur :       Expression tMUL Expression
-                        {printf("MUL %d %d %d", $1, $1, $3);
+                        {printf("MUL %d %d %d\n", $1, $1, $3);
                          ts_delete_tmp();
                          $$ = $1;}
               | Expression tDIV Expression  {}
-                        {printf("DIV %d %d %d", $1, $1, $3);
+                        {printf("DIV %d %d %d\n", $1, $1, $3);
                          ts_delete_tmp();
                          $$ = $1;}
               | tID     {int addr = ts_addr($1);
@@ -61,7 +87,7 @@ Facteur :       Expression tMUL Expression
                          printf("COP %d %d\n", tmp, addr);
                          $$ = tmp;}
               | tNB     {int tmp = ts_create_tmp();
-                         printf("AFC %d %d", tmp, $1);
+                         printf("AFC %d %d\n", tmp, $1);
                          $$ = tmp;}
               ;
 Instructions :  Instruction Instructions
