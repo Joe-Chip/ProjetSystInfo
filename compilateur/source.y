@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "table_symboles.h"
 
+extern int nb_lignes;
 %}
 
 %union {int nb; char* identificateur;}
@@ -31,8 +32,7 @@ L_Decl :        tCONST tINT {type_courant = INT_CONST;} Seq_Decl tPV
 Seq_Decl :      Decl tVIRGULE Seq_Decl 
               | Decl 
               ;
-Decl :          tID     {printf("Creation\n");
-                         switch (type_courant)
+Decl :          tID     {switch (type_courant)
                          {
                          case INT:
                             ts_create($1, TYPE_INT,
@@ -45,9 +45,7 @@ Decl :          tID     {printf("Creation\n");
                                       niveau_courant);
                             break;
                          }}
-              | tID tEGAL Expression
-                        {printf("Creation_Ini\n");
-                         switch (type_courant)
+              | tID     {switch (type_courant)
                          {
                          case INT:
                             ts_create($1, TYPE_INT,
@@ -59,8 +57,8 @@ Decl :          tID     {printf("Creation\n");
                                       VAR_INIT, VAR_CONST,
                                       niveau_courant);
                             break;
-                         }
-                         printf("COP %d %d\n", ts_addr($1), $3);}
+                         }}
+                tEGAL Expression {printf("COP %d %d\n", ts_addr($1), $3);}
               ;
 Expression :    tPO Expression tPF
                         {$$ = $2;}      
@@ -112,7 +110,7 @@ int main ()
 
 yyerror (char * s)
 {
-    fprintf(stderr, "%s\n", s);
+    fprintf(stderr, "%d: %s\n", nb_lignes, s);
 }
 
 

@@ -1,7 +1,7 @@
 %{
 #include "y.tab.h"
 #include <stdio.h>
-int i = 0;
+int nb_lignes = 0;
 %}
 
 %%
@@ -30,5 +30,5 @@ printf      {return tPRINT;}
 "*"         {return tMUL;}
 "/"         {return tDIV;}
 "="         {return tEGAL;}
-"\n"        {i++;}
+"\n"        {nb_lignes++;}
 .	        {}
