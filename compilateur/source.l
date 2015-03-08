@@ -1,14 +1,18 @@
 %{
 #include "y.tab.h"
 #include <stdio.h>
-int nb_lignes = 0;
 %}
+
+%option yylineno
 
 %%
 
 const       {return tCONST;}
 int         {return tINT;}
 main	    {return tMAIN;}
+if          {return tIF;}
+else        {return tELSE;}
+while       {return tWHILE;}
 return      {return tRETURN;}
 printf      {return tPRINT;}
 \{	        {return tAO;}
@@ -16,13 +20,21 @@ printf      {return tPRINT;}
 \(	        {return tPO;}
 \)	        {return tPF;}
 [a-zA-Z][a-zA-Z0-9_]*   {
-                            yylval.identificateur = yytext;
+                            yylval.identificateur = strdup(yytext);
                             return tID;
                         }
 [0-9]+	    {
                 yylval.nb = atoi(yytext);
                 return tNB;
             }
+"&&"        {return tAND;}
+"||"        {return tOR;}
+"=="        {return tEQUI;}
+"<="        {return tINFEG;}
+">="        {return tSUPEG;}
+"!="        {return tDIFF;}
+"<"         {return tINF;}
+">"         {return tSUP;}
 ";"	        {return tPV;}
 ","	        {return tVIRGULE;}
 "+"         {return tADD;}
@@ -30,5 +42,4 @@ printf      {return tPRINT;}
 "*"         {return tMUL;}
 "/"         {return tDIV;}
 "="         {return tEGAL;}
-"\n"        {nb_lignes++;}
 .	        {}
