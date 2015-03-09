@@ -42,4 +42,5 @@ printf      {return tPRINT;}
 "*"         {return tMUL;}
 "/"         {return tDIV;}
 "="         {return tEGAL;}
+\n          {}
 .	        {}

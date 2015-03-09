@@ -1,6 +1,7 @@
 #include "compilateur.h"
 
-// Initialisation du pointeursur le fichier de sortie
+// Initialisation des pointeurs sur le fichier de sortie
+FILE * output_tmp = NULL;
 FILE * output = NULL;
 
 // Indique la positiion actuelle dans la table des symboles
@@ -17,6 +18,13 @@ int compteur_asm = 0;
 
 // Indique la position actuelle dans la table des sauts
 int pos_tab_saut = 0;
+
+
+
+/******************************************************************************
+**************** Fonctions de gestion de la table des symboles ****************
+******************************************************************************/
+
 
 /*
  * Crée une variable a sommet de la table des symboles
@@ -108,6 +116,53 @@ void display_table()
     }
     printf("======================================================\n\n");
 }
+
+
+
+/******************************************************************************
+**************** Fonctions de gestion de la table des saut ********************
+******************************************************************************/
+
+// Ajoute un saut dans la table
+void add_saut(int destination)
+{
+    table_sauts[pos_tab_saut] = destination;
+    pos_tab_saut ++;
+}
+
+// Parcourt le fichier de sortie pour completer les sauts
+void completer_sauts ()
+{
+    int jump_traites = 0;
+    int char_cops, taille_a_copier;
+    char * ligne, * adr_tmp;
+    char adresse[] = "adresse";
+
+    ligne = malloc(TAILLE_LIGNE * sizeof(char));
+
+    // Retour au debut du fichier temporaire
+    rewind(output_tmp);
+
+    ligne = fgets(ligne, TAILLE_LIGNE, output_tmp);
+    
+    // Recopie dans le ficher de sortie
+    while (ligne != NULL) {
+        adr_tmp = strstr(ligne, adresse);
+
+        // En remplacant tous les "adresse" par l'adresse veritable
+        if (adr_tmp != NULL) {
+            taille_a_copier = (int) (adr_tmp - ligne);
+            printf("Copie de %d char\n", taille_a_copier);
+            for (char_cops = 0; char_cops < taille_a_copier; char_cops ++) {
+                fputc(ligne[char_cops], output);
+            }
+        } else {
+            fputs(ligne, output);
+        }
+        ligne = fgets(ligne, TAILLE_LIGNE, output_tmp);
+    }
+}
+
 
 
 

@@ -55,7 +55,8 @@ Decl :          tID tEGAL
                             break;
                          }}
                 Expression 
-                        {fprintf(output, "COP %d %d\n", ts_get_addr($1), $4);
+                        {fprintf(output_tmp, "COP %d %d\n",
+                                 ts_get_addr($1), $4);
                          compteur_asm ++;
                          ts_delete_tmp();}
               | tID     {switch (type_courant) {
@@ -72,24 +73,24 @@ Decl :          tID tEGAL
                          }}
               ;
 Expression :    Facteur tADD Expression    
-                        {fprintf(output, "ADD %d %d %d\n", $1, $1, $3);
+                        {fprintf(output_tmp, "ADD %d %d %d\n", $1, $1, $3);
                          compteur_asm ++;
                          ts_delete_tmp();
                          $$ = $1;}
               | Facteur tSUB Expression
-                        {fprintf(output, "SOU %d %d %d\n", $1, $1, $3);
+                        {fprintf(output_tmp, "SOU %d %d %d\n", $1, $1, $3);
                          compteur_asm ++;
                          ts_delete_tmp();
                          $$ = $1;}
               | Facteur {$$ = $1;}
               ;
 Facteur :       Terme tMUL Facteur
-                        {fprintf(output, "MUL %d %d %d\n", $1, $1, $3);
+                        {fprintf(output_tmp, "MUL %d %d %d\n", $1, $1, $3);
                          compteur_asm ++;
                          ts_delete_tmp();
                          $$ = $1;}
               | Terme tDIV Facteur
-                        {fprintf(output, "DIV %d %d %d\n", $1, $1, $3);
+                        {fprintf(output_tmp, "DIV %d %d %d\n", $1, $1, $3);
                          compteur_asm ++;
                          ts_delete_tmp();
                          $$ = $1;}
@@ -98,11 +99,11 @@ Terme :         tPO Expression tPF
                         {$$ = $2;}
               | tID     {int addr = ts_get_addr($1);
                          int tmp = ts_create_tmp();
-                         fprintf(output, "COP %d %d\n", tmp, addr);
+                         fprintf(output_tmp, "COP %d %d\n", tmp, addr);
                          compteur_asm ++;
                          $$ = tmp;}
               | tNB     {int tmp = ts_create_tmp();
-                         fprintf(output, "AFC %d %d\n", tmp, $1);
+                         fprintf(output_tmp, "AFC %d %d\n", tmp, $1);
                          compteur_asm ++;
                          $$ = tmp;}
               ;
@@ -118,7 +119,7 @@ Affectation :   tID tEGAL Expression tPV
                         {int addr = ts_get_addr($1);
                          if (addr >= 0) {
                             if (ts_is_const($1) == VAR_NON_CONST) {
-                                fprintf(output, "COP %d %d\n", addr, $3);
+                                fprintf(output_tmp, "COP %d %d\n", addr, $3);
                                 compteur_asm ++;
                             }
                          }
@@ -126,19 +127,16 @@ Affectation :   tID tEGAL Expression tPV
               ;
 Print :         tPRINT tPO tPF tPV
               ;
-If :            tIF tPO Condition tPF     %prec IFSEUL
-                        {fprintf(output, "JMF %d\n", $3);
-                         compteur_asm ++;
-                         ts_delete_tmp();}
-                tAO Corps tAF
-              | tIF tPO Condition tPF
-                        {fprintf(output, "JMF %d\n", $3);
-                         compteur_asm ++;
-                         ts_delete_tmp();}
-                tAO Corps tAF tELSE
-                        {fprintf(output, "JMP\n");
+If :            tIF Trait_Cond tAO Corps tAF     %prec IFSEUL
+              | tIF Trait_Cond tAO Corps tAF tELSE
+                        {fprintf(output_tmp, "JMP adresse\n");
                          compteur_asm ++;}
                 tAO Corps tAF
+              ;
+Trait_Cond :    tPO Condition tPF
+                        {fprintf(output_tmp, "JMF %d adresse\n", $2);
+                         compteur_asm ++;
+                         ts_delete_tmp();}
               ;
 While :         tWHILE tPO Condition tPF tAO Corps tAF
               ;
@@ -147,24 +145,24 @@ Condition :     Operande tAND Condition
               | Operande {$$ = $1;}
               ;
 Operande :      Expression tEQUI Expression
-                        {fprintf(output, "EQU %d %d %d\n", $1, $1, $3);
+                        {fprintf(output_tmp, "EQU %d %d %d\n", $1, $1, $3);
                          compteur_asm ++;
                          ts_delete_tmp();
                          $$ = $1;}
               | Expression tDIFF Expression
-                        {fprintf(output, "DIF %d %d %d\n", $1, $1, $3);
+                        {fprintf(output_tmp, "DIF %d %d %d\n", $1, $1, $3);
                          compteur_asm ++;
                          ts_delete_tmp();
                          $$ = $1;}
               | Expression tINFEG Expression
               | Expression tSUPEG Expression
               | Expression tINF Expression
-                        {fprintf(output, "INF %d %d %d\n", $1, $1, $3);
+                        {fprintf(output_tmp, "INF %d %d %d\n", $1, $1, $3);
                          compteur_asm ++;
                          ts_delete_tmp();
                          $$ = $1;}
               | Expression tSUP Expression
-                        {fprintf(output, "SUP %d %d %d\n", $1, $1, $3);
+                        {fprintf(output_tmp, "SUP %d %d %d\n", $1, $1, $3);
                          compteur_asm ++;
                          ts_delete_tmp();
                          $$ = $1;}
@@ -197,18 +195,31 @@ int main (int argc, char * argv[])
             if (output == NULL) {
                 printf("Erreur à l'ouverture du fichier de sortie\n");
                 result = 3;
+            } else {
+                output_tmp = fopen("out_tmp.asm", "w+");
+                if (output_tmp == NULL) {
+                    printf("Erreur à l'ouverture du fichier temporaire\n");
+                    result = 4;
+                }
             }
         }
     } else {
-        printf("Erreur, veuillez fournir au moins le fichier d'entrée\n");
+        printf("\nUsage : lexgo [SOURCE] [SORTIE]\n");
+        printf("Fournir au moins le fichier c source\n");
+        printf("Si le fichier sortie n'est pas fini,\n");
+        printf("le fichier \"out.asm\" sera cree.\n");
         result = 1;
     }
 
     // Execution de la compilation ssi les entrees sont correctes
     if (result == 0) {
         result = yyparse();
-        printf("%d\n", compteur_asm);
+        completer_sauts();
     }
+
+    fclose(yyin);
+    fclose(output_tmp);
+    fclose(output);
 
     return result;
 }

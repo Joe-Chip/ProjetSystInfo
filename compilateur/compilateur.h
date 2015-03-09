@@ -26,8 +26,15 @@
 #define TAILLE_TAB_SYMB 256
 #define TAILLE_TAB_SAUTS 256
 
+// Taille max d'une ligne d'instruction assembleur
+#define TAILLE_LIGNE 80
 
-// Descripteur du ficher de sortie
+/*
+ * Descripteur du ficher de sortie. Le fichier tmp stocke le premier passage,
+ * qui sera recopié en remplaçant toutes les occurences du mot "adresse"
+ * par les adresses effectives
+ */
+extern FILE * output_tmp;
 extern FILE * output;
 
 /* Définition de la table des symboles */
@@ -51,10 +58,14 @@ extern int niveau_courant;
 // Compteur du nombre de lignes ecrites en assembleur
 extern int compteur_asm;
 
-// Table des sauts : contient la ligne d'origine de chaque saut
+// Table des sauts : contient l'adresse de destination de chaque saut
 int table_sauts[TAILLE_TAB_SAUTS];
 extern int pos_tab_saut;
 
+
+/******************************************************************************
+**************** Fonctions de gestion de la table des symboles ****************
+******************************************************************************/
 
 /*
  * Crée une variable au sommet de la table des symboles
@@ -92,5 +103,16 @@ void ts_delete_tmp();
  * Affiche la table des symboles. Utilisee pour le debug
  */
 void display_table();
+
+
+/******************************************************************************
+**************** Fonctions de gestion de la table des sauts *******************
+******************************************************************************/
+
+// Ajoute un saut dans la table
+void add_saut(int destination);
+
+// Parcourt le fichier de sortie pour completer les sauts
+void completer_sauts ();
 
 #endif
