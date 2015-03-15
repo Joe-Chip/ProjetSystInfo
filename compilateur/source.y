@@ -14,7 +14,7 @@ extern int yylineno;
 %token tADD tSUB tMUL tDIV tEGAL
 %token tIF tELSE tWHILE
 %token tAND tOR tEQUI tINFEG tSUPEG tDIFF tINF tSUP
-%type <nb> Expression Facteur Terme Condition Operande
+%type <nb> Expression Facteur Terme Condition Operande Trait_Cond Get_ASM_Compt
 %start Start
 %left tOR
 %left tAND
@@ -26,6 +26,7 @@ extern int yylineno;
 %%
 
 Start :         Main
+              ;
 Main :          tINT tMAIN tPO tPF tAO Corps Return tAF
               ;
 Corps :         Declarations Instructions
@@ -114,6 +115,7 @@ Instruction :   Affectation
               | Print
               | If
               | While
+              | error
               ;
 Affectation :   tID tEGAL Expression tPV
                         {int addr = ts_get_addr($1);
@@ -127,21 +129,38 @@ Affectation :   tID tEGAL Expression tPV
               ;
 Print :         tPRINT tPO tPF tPV
               ;
-If :            tIF Trait_Cond tAO Corps tAF     %prec IFSEUL
-              | tIF Trait_Cond tAO Corps tAF tELSE
-                        {fprintf(output_tmp, "JMP adresse\n");
+If :            tIF tPO Trait_Cond tPF tAO Corps tAF     %prec IFSEUL
+                        {add_saut(compteur_asm + 1);}
+              | tIF tPO Trait_Cond tPF tAO Corps tAF tELSE
+                        {add_saut(compteur_asm + 2);
+                         fprintf(output_tmp, "JMP adresse\n");
                          compteur_asm ++;}
                 tAO Corps tAF
+                        {add_saut(compteur_asm + 1);}
               ;
-Trait_Cond :    tPO Condition tPF
-                        {fprintf(output_tmp, "JMF %d adresse\n", $2);
+Trait_Cond :    Condition
+                        {fprintf(output_tmp, "JMF %d adresse\n", $1);
                          compteur_asm ++;
                          ts_delete_tmp();}
               ;
-While :         tWHILE tPO Condition tPF tAO Corps tAF
+While :         tWHILE tPO Get_ASM_Compt Trait_Cond tPF tAO Corps tAF
+                        {add_saut(compteur_asm + 2);
+                         fprintf(output_tmp, "JMP adresse\n");
+                         compteur_asm ++;
+                         add_saut($3);}
               ;
+Get_ASM_Compt :           {$$ = compteur_asm + 1;}
+              ; 
 Condition :     Operande tAND Condition
+                        {fprintf(output_tmp, "AND %d %d %d\n", $1, $1, $3);
+                         compteur_asm ++;
+                         ts_delete_tmp();
+                         $$ = $1;}
               | Operande tOR Condition
+                        {fprintf(output_tmp, "OR %d %d %d\n", $1, $1, $3);
+                         compteur_asm ++;
+                         ts_delete_tmp();
+                         $$ = $1;}
               | Operande {$$ = $1;}
               ;
 Operande :      Expression tEQUI Expression
@@ -206,7 +225,7 @@ int main (int argc, char * argv[])
     } else {
         printf("\nUsage : lexgo [SOURCE] [SORTIE]\n");
         printf("Fournir au moins le fichier c source\n");
-        printf("Si le fichier sortie n'est pas fini,\n");
+        printf("Si le fichier sortie n'est pas defini,\n");
         printf("le fichier \"out.asm\" sera cree.\n");
         result = 1;
     }
@@ -219,6 +238,7 @@ int main (int argc, char * argv[])
 
     fclose(yyin);
     fclose(output_tmp);
+    remove("out_tmp.asm");
     fclose(output);
 
     return result;

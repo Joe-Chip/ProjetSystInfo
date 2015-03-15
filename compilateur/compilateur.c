@@ -152,10 +152,10 @@ void completer_sauts ()
         // En remplacant tous les "adresse" par l'adresse veritable
         if (adr_tmp != NULL) {
             taille_a_copier = (int) (adr_tmp - ligne);
-            printf("Copie de %d char\n", taille_a_copier);
             for (char_cops = 0; char_cops < taille_a_copier; char_cops ++) {
                 fputc(ligne[char_cops], output);
             }
+            fprintf(output, "%d\n", table_sauts[jump_traites++]);
         } else {
             fputs(ligne, output);
         }
@@ -164,5 +164,15 @@ void completer_sauts ()
 }
 
 
-
+// Affichage de la table des sauts, utilis pour le debug
+void afficher_table_sauts()
+{
+    int i;
+    
+    printf("\n====================TABLE DES SAUTS===================\n");
+    for (i = 0; i < pos_tab_saut; i++) {
+        printf("Saut no %d : vers %d\n", i, table_sauts[i]);
+    }
+    printf("======================================================\n\n");
+}
 

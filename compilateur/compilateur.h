@@ -115,4 +115,6 @@ void add_saut(int destination);
 // Parcourt le fichier de sortie pour completer les sauts
 void completer_sauts ();
 
+// Affichage de la table des sauts, utilis pour le debug
+void afficher_table_sauts();
 #endif

@@ -8,5 +8,9 @@ int main () {
         i = 1;
     }
 
+    while (i < j) {
+        i = i + 2;
+    }
+
     return 0;
 }
