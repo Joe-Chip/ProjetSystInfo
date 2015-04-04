@@ -9,6 +9,7 @@
 
 const       {return tCONST;}
 int         {return tINT;}
+void        {return tVOID;}
 main	    {return tMAIN;}
 if          {return tIF;}
 else        {return tELSE;}

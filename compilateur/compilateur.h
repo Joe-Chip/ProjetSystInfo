@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "fonctions.h"
 
 /* 
  * Definition des constantes utilisées par la table des symboles
  * Comportement par defaut : int non initialisé non constant
  */
-#define TYPE_INT 0
+#define TYPE_VOID 0
+#define TYPE_INT 1
 #define VAR_NON_INIT 0
 #define VAR_INIT 1
 #define VAR_NON_CONST 0
@@ -90,7 +92,13 @@ int ts_get_addr(char * nom);
 int ts_is_const(char * nom);
 
 /*
- * Crée ue variable temporaire en haut de la table des symboles
+ * Retire toutes les variables du niveau courant de la table des symboles
+ * Utilise en sortie d'un bloc
+ */
+void ts_vider_dernier_niveau();
+
+/*
+ * Crée une variable temporaire en haut de la table des symboles
  */
 int ts_create_tmp();
 
@@ -98,6 +106,11 @@ int ts_create_tmp();
  * Supprime la derniere variable temporaire
  */
 void ts_delete_tmp();
+
+/*
+ * Cree une variable à partir d'un parametre de fonction
+ */
+ts_create_from_param(struct t_param param);
 
 /*
  * Affiche la table des symboles. Utilisee pour le debug
