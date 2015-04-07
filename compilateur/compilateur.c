@@ -30,13 +30,13 @@ int pos_tab_saut = 0;
  * Crée une variable a sommet de la table des symboles
  */
 void ts_create(char * nom, int type, int is_init,
-               int is_const, int niveau)
+               int is_const)
 {
     table_symboles[pos_symbole].nom = strdup(nom);
     table_symboles[pos_symbole].type = type;
     table_symboles[pos_symbole].is_init = is_init;
     table_symboles[pos_symbole].is_const = is_const;
-    table_symboles[pos_symbole].niveau = niveau;
+    table_symboles[pos_symbole].niveau = niveau_courant;
     pos_symbole++;
 }
 
@@ -57,7 +57,7 @@ int ts_get_addr(char * nom)
 {
     int i = pos_symbole - 1;
     int addr = -1;
-    while (i >= 0 && addr == -1 && table_symboles[i].niveau == niveau_courant) {
+    while (i >= 0 && addr == -1) {
         if (strcmp(table_symboles[i].nom, nom) == 0) {
             addr = i;
         }
@@ -73,6 +73,25 @@ int ts_get_addr(char * nom)
 int ts_is_const(char * nom)
 {
     return table_symboles[ts_get_addr(nom)].is_const;
+}
+
+/*
+ *
+ *
+ */
+void ts_vider_dernier_niveau()
+{
+    int i = pos_symbole - 1;
+
+    while (table_symboles[i].niveau == niveau_courant) {
+        free(table_symboles[i].nom);
+        table_symboles[i].type = TYPE_VOID;
+        table_symboles[i].is_init = VAR_NON_INIT;
+        table_symboles[i].is_const = VAR_NON_CONST;
+        table_symboles[i].niveau = 0;
+        i --;
+        pos_symbole --;
+    }
 }
 
 /*
@@ -99,6 +118,21 @@ void ts_delete_tmp()
     free(table_symboles[pos_symbole].nom);
     table_symboles[pos_symbole].is_init = VAR_NON_INIT;
 }
+
+
+/*
+ * Cree une variable à partir d'un parametre de fonction
+ */
+ts_create_from_param(struct t_param param)
+{
+    table_symboles[pos_symbole].nom = strdup(param.nom);
+    table_symboles[pos_symbole].type = param.type;
+    table_symboles[pos_symbole].is_init = is_init;
+    table_symboles[pos_symbole].is_const = param.is_const;
+    table_symboles[pos_symbole].niveau = niveau_courant;
+    pos_symbole++;
+}
+
 
 /*
  * Affiche la table des symboles. Utilisee pour le debug
@@ -135,8 +169,9 @@ void completer_sauts ()
 {
     int jump_traites = 0;
     int char_cops, taille_a_copier;
-    char * ligne, * adr_tmp;
-    char adresse[] = "adresse";
+    char * ligne, * adr_jump, *adr_fonct;
+    char adr_jmp[] = "adr_jmp";
+    char adr_fct[] = "adr_fct";
 
     ligne = malloc(TAILLE_LIGNE * sizeof(char));
 
@@ -147,15 +182,22 @@ void completer_sauts ()
     
     // Recopie dans le ficher de sortie
     while (ligne != NULL) {
-        adr_tmp = strstr(ligne, adresse);
+        adr_jump = strstr(ligne, adr_jmp);
+        adr_fonct = strstr(ligne, adr_fct);
 
         // En remplacant tous les "adresse" par l'adresse veritable
-        if (adr_tmp != NULL) {
-            taille_a_copier = (int) (adr_tmp - ligne);
+        if (adr_jump != NULL) {
+            taille_a_copier = (int) (adr_jump - ligne);
             for (char_cops = 0; char_cops < taille_a_copier; char_cops ++) {
                 fputc(ligne[char_cops], output);
             }
             fprintf(output, "%d\n", table_sauts[jump_traites++]);
+        } else if (adr_fonct != NULL) {
+            taille_a_copier = (int) (adr_fonct - ligne);
+            for (char_cops = 0; char_cops < taille_a_copier; char_cops ++) {
+                fputc(ligne[char_cops], output);
+            }
+
         } else {
             fputs(ligne, output);
         }

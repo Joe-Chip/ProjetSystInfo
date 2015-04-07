@@ -7,7 +7,7 @@ extern int yylineno;
 %}
 
 %union {int nb; char* identificateur;}
-%token tMAIN tCONST tINT tPRINT tRETURN
+%token tMAIN tCONST tINT tVOID tPRINT tRETURN
 %token tAO tAF tPO tPF tPV tVIRGULE 
 %token <nb> tNB
 %token <identificateur> tID
@@ -15,6 +15,7 @@ extern int yylineno;
 %token tIF tELSE tWHILE
 %token tAND tOR tEQUI tINFEG tSUPEG tDIFF tINF tSUP
 %type <nb> Expression Facteur Terme Condition Operande Trait_Cond Get_ASM_Compt
+%type <nb> Appel_Fonct
 %start Start
 %left tOR
 %left tAND
@@ -25,19 +26,28 @@ extern int yylineno;
 
 %%
 
-Start :         Main
+Start :         Prototypes Main Decl_Foncts
+              | Main
               ;
-Main :          tINT tMAIN tPO tPF tAO Corps Return tAF
+Main :          tINT tMAIN tPO tPF {display_table(); niveau_courant ++;}
+                Corps
+                        {display_table(); ts_vider_dernier_niveau();
+                         display_table(); niveau_courant --;}
               ;
-Corps :         Declarations Instructions
+Corps :         tAO Body tAF
+              | Instruction
+              ;
+Body :          Declarations Instructions
               | Declarations
               | Instructions
+              ;
+Type :          tINT {type_courant = INT;}
+              | tCONST tINT {type_courant = INT_CONST;}
               ;
 Declarations :  L_Decl Declarations 
               | L_Decl
               ;
-L_Decl :        tCONST tINT {type_courant = INT_CONST;} Seq_Decl tPV 
-              | tINT {type_courant = INT;} Seq_Decl tPV 
+L_Decl :        Type Seq_Decl tPV 
               ;
 Seq_Decl :      Decl tVIRGULE Seq_Decl 
               | Decl 
@@ -46,13 +56,11 @@ Decl :          tID tEGAL
                         {switch (type_courant) {
                          case INT:
                             ts_create($1, TYPE_INT,
-                                      VAR_INIT, VAR_NON_CONST,
-                                      niveau_courant);
+                                      VAR_INIT, VAR_NON_CONST);
                             break;
                          case INT_CONST:
                             ts_create($1, TYPE_INT,
-                                      VAR_INIT, VAR_CONST,
-                                      niveau_courant);
+                                      VAR_INIT, VAR_CONST);
                             break;
                          }}
                 Expression 
@@ -63,13 +71,11 @@ Decl :          tID tEGAL
               | tID     {switch (type_courant) {
                          case INT:
                             ts_create($1, TYPE_INT,
-                                      VAR_NON_INIT, VAR_NON_CONST,
-                                      niveau_courant);
+                                      VAR_NON_INIT, VAR_NON_CONST);
                             break;
                          case INT_CONST:
                             ts_create($1, TYPE_INT,
-                                      VAR_NON_INIT, VAR_CONST,
-                                      niveau_courant);
+                                      VAR_NON_INIT, VAR_CONST);
                             break;
                          }}
               ;
@@ -98,6 +104,8 @@ Facteur :       Terme tMUL Facteur
               | Terme   {$$ = $1;}
 Terme :         tPO Expression tPF
                         {$$ = $2;}
+              | tSUB Expression
+                        {$$ = $2;}
               | tID     {int addr = ts_get_addr($1);
                          int tmp = ts_create_tmp();
                          fprintf(output_tmp, "COP %d %d\n", tmp, addr);
@@ -107,14 +115,18 @@ Terme :         tPO Expression tPF
                          fprintf(output_tmp, "AFC %d %d\n", tmp, $1);
                          compteur_asm ++;
                          $$ = tmp;}
+              | Appel_Fonct
+                        {$$ = $1;}
               ;
-Instructions :  Instruction Instructions
-              | Instruction
+Instructions :  Instruction {display_table();} Instructions
+              | Instruction {display_table();}
               ;
 Instruction :   Affectation
               | Print
               | If
               | While
+              | Return
+              | Appel_Fonct
               | error
               ;
 Affectation :   tID tEGAL Expression tPV
@@ -129,23 +141,23 @@ Affectation :   tID tEGAL Expression tPV
               ;
 Print :         tPRINT tPO tPF tPV
               ;
-If :            tIF tPO Trait_Cond tPF tAO Corps tAF     %prec IFSEUL
+If :            tIF tPO Trait_Cond tPF Corps        %prec IFSEUL
                         {add_saut(compteur_asm + 1);}
-              | tIF tPO Trait_Cond tPF tAO Corps tAF tELSE
+              | tIF tPO Trait_Cond tPF Corps tELSE
                         {add_saut(compteur_asm + 2);
-                         fprintf(output_tmp, "JMP adresse\n");
+                         fprintf(output_tmp, "JMP adr_jmp\n");
                          compteur_asm ++;}
-                tAO Corps tAF
+                Corps
                         {add_saut(compteur_asm + 1);}
               ;
 Trait_Cond :    Condition
-                        {fprintf(output_tmp, "JMF %d adresse\n", $1);
+                        {fprintf(output_tmp, "JMF %d adr_jmp\n", $1);
                          compteur_asm ++;
                          ts_delete_tmp();}
               ;
-While :         tWHILE tPO Get_ASM_Compt Trait_Cond tPF tAO Corps tAF
+While :         tWHILE tPO Get_ASM_Compt Trait_Cond tPF Corps
                         {add_saut(compteur_asm + 2);
-                         fprintf(output_tmp, "JMP adresse\n");
+                         fprintf(output_tmp, "JMP adr_jmp\n");
                          compteur_asm ++;
                          add_saut($3);}
               ;
@@ -174,7 +186,23 @@ Operande :      Expression tEQUI Expression
                          ts_delete_tmp();
                          $$ = $1;}
               | Expression tINFEG Expression
+                        {int tmp_inf = ts_create_tmp();
+                         fprintf(output_tmp, "INF %d %d %d\n", tmp_inf, $1, $3);
+                         fprintf(output_tmp, "EQU %d %d %d\n", $1, $1, $3);
+                         fprintf(output_tmp, "OR %d %d %d\n", $1, $1, tmp_inf);
+                         compteur_asm += 3;
+                         ts_delete_tmp();
+                         ts_delete_tmp();
+                         $$ = $1;}
               | Expression tSUPEG Expression
+                        {int tmp_sup = ts_create_tmp();
+                         fprintf(output_tmp, "SUP %d %d %d\n", tmp_sup, $1, $3);
+                         fprintf(output_tmp, "EQU %d %d %d\n", $1, $1, $3);
+                         fprintf(output_tmp, "OR %d %d %d\n", $1, $1, tmp_sup);
+                         compteur_asm += 3;
+                         ts_delete_tmp();
+                         ts_delete_tmp();
+                         $$ = $1;}
               | Expression tINF Expression
                         {fprintf(output_tmp, "INF %d %d %d\n", $1, $1, $3);
                          compteur_asm ++;
@@ -192,6 +220,60 @@ Operande :      Expression tEQUI Expression
               ;
 Return :        tRETURN tNB tPV
               ;
+Prototypes :    Prototype Prototypes
+              | Prototype
+              ;
+Prototype :     tINT tID
+                        {tf_add_fonct($2, TYPE_INT);}
+                tPO Params_Proto tPF tPV
+              | tVOID tID
+                        {tf_add_fonct($2, TYPE_VOID);}
+                tPO Params_Proto tPF tPV
+              ;
+Params_Proto :  Param_Proto tVIRGULE Params_Proto
+              | Param_Proto
+              ;
+Param_Proto :   Type tID
+                        {switch(type_courant) {
+                         case INT:
+                            tf_init_param($2, TYPE_INT, VAR_CONST);
+                            break;
+                         case INT_CONST:
+                            tf_init_param($2, TYPE_INT, VAR_NON_CONST);
+                            break;
+                         }}
+              ;
+Decl_Foncts :   Decl_Fonct Decl_Foncts
+              | Decl_Fonct
+              ;
+Decl_Fonct :    tINT tID 
+                        {tf_init_addr($2, TYPE_INT, compteur_asm);}
+                tPO Params_Decl tPF Corps
+              | tVOID tID
+                        {tf_init_addr($2, TYPE_VOID, compteur_asm);}
+                tPO Params_Decl tPF Corps
+              ;
+Params_Decl :   Param_Decl tVIRGULE Params_Decl
+              | Param_Decl
+              ;
+Param_Decl :    Type tID
+                        {tf_check_param($2, $1,
+                                        tf_get_next_param(fonct_courante));}
+              ;
+Appel_Fonct :   tID
+                        {niveau_courant ++;
+                         fonct_courante = tf_get_position($1);}
+                tPO Params_Appel tPF tPV
+                        {int addr_result = 0;
+                         niveau_courant --;
+                         $$ = addr_result;}
+              ;
+Params_Appel :  Expression tVIRGULE Params_Appel
+              | Expression
+                        {ts_create_from_param(
+                                        tf_get_next_param(fonct_courante));}
+              ;
+
 
 %%
 
