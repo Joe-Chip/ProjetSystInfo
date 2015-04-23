@@ -6,46 +6,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include "compilateur.h"
+#include "tables.h"
 
-/*
- * Definition des constantes utilisées pour la gestion des fonctions
- */
-#define MAX_PARAM_NB 10
-#define TAILLE_TAB_FONCT 256
+
+// Constante pour indiquer si le main a ete lu
+#define MAIN_NON_FINI 0
+#define MAIN_FINI 1
 
 // Constante uilisees pour la verification de la declaration des parametres
 #define PARAM_NON_CONFORME 0
-#define PARAM_NON_OK 1
+#define PARAM_OK 1
+#define PARAMS_NON_INIT 2
+#define PARAMS_OK 3
 
-// Traitement des variables statiques
-#define RESET_NB_PARAMS_TRAITES 1
+// Variable indiqant si le main a ete lu
+extern int main_fini;
 
-/*
- * Definiton des parametres
- */
-struct t_param {
-    char * nom;
-    int type;
-    int is_const;
-};
-
-/*
- * Definition de la structure associée aux fonctions
- */
-struct type_fonction {
-    char * nom;
-    int adresse;
-    int type_retour;
-    int nb_params;
-    struct t_param tab_params[MAX_PARAM_NB];
-};
-
-struct type_fonction table_fonctions[TAILLE_TAB_FONCT];
+// Position dans la table de fonctions
 extern int pos_fonction;
 
 // Indice de la fonction traitée, utilise lors d'un appel
 extern int fonct_courante;
 
+// Indice du parametre en traitment
+extern int params_traites;
 
 /******************************************************************************
 **************** Fonctions de gestion de la table de fonctions ****************
@@ -54,8 +38,9 @@ extern int fonct_courante;
 /*
  * Fonction pour ajouter une fonction dans la table.
  * Appelee a la rencontre avec le prototype
+ * Renvoie la position de la fnction dans la table
  */
-void tf_add_fonct(char * nom, int type);
+int tf_add_fonct(char * nom, int type, int addr);
 
 /*
  * Fonction d'initialisation des parametres
@@ -73,8 +58,25 @@ int tf_init_addr(char * nom, int type, int addr);
 
 /*
  * Recupere la position de la fonction dont le nom est passe en argument
+ * Renvoie -1 si la fonction n'est pas présente dans la table
  */
 int tf_get_position(char * nom);
+
+/*
+ * Recupere l'adsresse de la fonction dans le code ASM
+ */
+int tf_get_addr(char * nom);
+
+/*
+ * Fonction appelee a la fin de l'initialisation des parametres, pour indiquer
+ * qu'ils ont bien etes initialises
+ */
+void tf_set_params_init(char * nom);
+
+/*
+ * Fonction pour verifier que les parametres ont bien etes initialises
+ */
+int tf_check_params_init(int position);
 
 /*
  * Verifie que le parametre lu dans la declaration est bien conforme a
@@ -87,8 +89,12 @@ int tf_check_param(char * nom, int type, struct t_param param);
 /*
  * Recupere le prochain parametre a copier dans la table des symboles
  */
-struct t_param tf_get_next_param(int fonction, int reset);
+struct t_param tf_get_next_param(int fonction);
 
 
+/*
+ * Affiche la table des fonctions. Utilisee pour le debug
+ */
+void display_table_fonct();
 
 #endif

@@ -8,7 +8,7 @@ FILE * output = NULL;
 int pos_symbole = 0;
 
 // Stocke le type des variables à créer (par default : int non constant)
-int type_courant = INT;
+int type_courant = TYPE_INT;
 
 // Stocke le niveau d'appel de la fonction en cours
 int niveau_courant = 0;
@@ -29,8 +29,7 @@ int pos_tab_saut = 0;
 /*
  * Crée une variable a sommet de la table des symboles
  */
-void ts_create(char * nom, int type, int is_init,
-               int is_const)
+void ts_create(char * nom, int type, int is_init, int is_const)
 {
     table_symboles[pos_symbole].nom = strdup(nom);
     table_symboles[pos_symbole].type = type;
@@ -58,8 +57,11 @@ int ts_get_addr(char * nom)
     int i = pos_symbole - 1;
     int addr = -1;
     while (i >= 0 && addr == -1) {
-        if (strcmp(table_symboles[i].nom, nom) == 0) {
-            addr = i;
+        if (table_symboles[i].niveau == niveau_courant
+            || table_symboles[i].niveau == niveau_courant) {
+            if (strcmp(table_symboles[i].nom, nom) == 0) {
+                addr = i;
+            }
         }
         i--;
     }
@@ -75,9 +77,10 @@ int ts_is_const(char * nom)
     return table_symboles[ts_get_addr(nom)].is_const;
 }
 
+
 /*
- *
- *
+ * Retire toutes les variables du niveau courant de la table des symboles
+ * Utilise en sortie d'un bloc
  */
 void ts_vider_dernier_niveau()
 {
@@ -94,8 +97,9 @@ void ts_vider_dernier_niveau()
     }
 }
 
+
 /*
- * Crée ue variable temporaire en haut de la table des symboles
+ * Crée une variable temporaire en haut de la table des symboles
  */
 int ts_create_tmp()
 {
@@ -123,21 +127,23 @@ void ts_delete_tmp()
 /*
  * Cree une variable à partir d'un parametre de fonction
  */
-ts_create_from_param(struct t_param param)
+int ts_create_from_param(struct t_param param)
 {
     table_symboles[pos_symbole].nom = strdup(param.nom);
     table_symboles[pos_symbole].type = param.type;
-    table_symboles[pos_symbole].is_init = is_init;
+    table_symboles[pos_symbole].is_init = VAR_INIT;
     table_symboles[pos_symbole].is_const = param.is_const;
     table_symboles[pos_symbole].niveau = niveau_courant;
     pos_symbole++;
+
+    return pos_symbole - 1;
 }
 
 
 /*
  * Affiche la table des symboles. Utilisee pour le debug
  */
-void display_table()
+void display_table_symb()
 {
     int i;
 
@@ -168,10 +174,11 @@ void add_saut(int destination)
 void completer_sauts ()
 {
     int jump_traites = 0;
-    int char_cops, taille_a_copier;
-    char * ligne, * adr_jump, *adr_fonct;
+    int char_cops, taille_a_copier, adr_fonct;
+    char * ligne, * adr_jump, *appel_fonct;
     char adr_jmp[] = "adr_jmp";
-    char adr_fct[] = "adr_fct";
+//    char adr_fct[] = "adr_fct";
+    char call[] = "CALL";
 
     ligne = malloc(TAILLE_LIGNE * sizeof(char));
 
@@ -183,21 +190,26 @@ void completer_sauts ()
     // Recopie dans le ficher de sortie
     while (ligne != NULL) {
         adr_jump = strstr(ligne, adr_jmp);
-        adr_fonct = strstr(ligne, adr_fct);
+        appel_fonct = strstr(ligne, call);
 
-        // En remplacant tous les "adresse" par l'adresse veritable
+        // En remplacant les sauts et appels de fonction par l'adresse
         if (adr_jump != NULL) {
+            // Copie de la partie à preserver
             taille_a_copier = (int) (adr_jump - ligne);
             for (char_cops = 0; char_cops < taille_a_copier; char_cops ++) {
                 fputc(ligne[char_cops], output);
             }
+            // Ajout de l'adresse de saut
             fprintf(output, "%d\n", table_sauts[jump_traites++]);
-        } else if (adr_fonct != NULL) {
-            taille_a_copier = (int) (adr_fonct - ligne);
+        } else if (appel_fonct != NULL) {
+            // Copie de l'appel à CALL
+            taille_a_copier = 5;
             for (char_cops = 0; char_cops < taille_a_copier; char_cops ++) {
                 fputc(ligne[char_cops], output);
             }
-
+            // Ajout de l'adresse de la fonction
+            appel_fonct = strdup(ligne + 5);
+            fprintf(output, "%d\n", tf_get_addr(appel_fonct));
         } else {
             fputs(ligne, output);
         }
