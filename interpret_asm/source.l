@@ -20,6 +20,8 @@ INF         {return tINF;}
 SUP         {return tSUP;}
 EQU         {return tEQU;}
 DIF         {return tDIF;}
+CALL        {return tCALL;}
+RET         {return tRET;}
 [0-9]+      {
                 yylval.nb = atoi(yytext);
                 return tOPERAND;
