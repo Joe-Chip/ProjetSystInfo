@@ -1,10 +1,17 @@
+# Definition des variables
+CFLAGS = 
+OFILES = compilateur.o fonctions.o
+
 default : lexgo
 all : lexgo
 
 clean :
-	rm lex.yy.c y.tab.* lexgo *.asm
+	rm lex.yy.c y.tab.* *.o lexgo *.asm
 
-lexgo : source.* compilateur.* fonctions.* 
-	yacc -d source.y
+lexgo : source.* $(OFILES)
+	yacc -tvd source.y
 	lex source.l
-	gcc y.tab.c lex.yy.c compilateur.c fonctions.c -ll -o $@
+	gcc $(CFLAGS) y.tab.c lex.yy.c $(OFILES) -ll -o $@
+
+%.o : %.c %.h 
+	gcc -c $< -o $@

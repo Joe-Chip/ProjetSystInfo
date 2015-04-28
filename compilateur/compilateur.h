@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "fonctions.h"
+#include "tables.h"
 
 /* 
  * Definition des constantes utilisées par la table des symboles
@@ -12,21 +13,14 @@
  */
 #define TYPE_VOID 0
 #define TYPE_INT 1
+#define TYPE_CONST_VOID 100
+#define TYPE_CONST_INT 101
+#define ADD_CONST 100
 #define VAR_NON_INIT 0
 #define VAR_INIT 1
 #define VAR_NON_CONST 0
 #define VAR_CONST 1
 
-/*
- * Constantes utilisées pour savoir de quel type vont être
- * les variables créées par une ligne de déclarations
- */
-#define INT 0
-#define INT_CONST 1
-
-// Taille de la table des symboles et de la table des sauts
-#define TAILLE_TAB_SYMB 256
-#define TAILLE_TAB_SAUTS 256
 
 // Taille max d'une ligne d'instruction assembleur
 #define TAILLE_LIGNE 80
@@ -39,16 +33,7 @@
 extern FILE * output_tmp;
 extern FILE * output;
 
-/* Définition de la table des symboles */
-struct type_symbole {
-    char * nom;
-    int type;
-    int is_init;
-    int is_const;
-    int niveau;
-};
-
-struct type_symbole table_symboles[TAILLE_TAB_SYMB];
+// Position dans la table des symboles
 extern int pos_symbole;
 
 // Stocke le type des variables à créer (par default : int non constant)
@@ -72,7 +57,7 @@ extern int pos_tab_saut;
 /*
  * Crée une variable au sommet de la table des symboles
  */
-void ts_create(char * nom, int type, int is_init, int is_const, int niveau);
+void ts_create(char * nom, int type, int is_init, int is_const);
 
 /*
  * La variable dont le nom est passé en argument se voit initialisée :
@@ -110,12 +95,12 @@ void ts_delete_tmp();
 /*
  * Cree une variable à partir d'un parametre de fonction
  */
-ts_create_from_param(struct t_param param);
+int ts_create_from_param(struct t_param param);
 
 /*
  * Affiche la table des symboles. Utilisee pour le debug
  */
-void display_table();
+void display_table_symb();
 
 
 /******************************************************************************

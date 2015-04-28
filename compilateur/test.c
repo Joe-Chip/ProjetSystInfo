@@ -1,3 +1,5 @@
+void toto (int lulz);
+
 int main () {
     int i = 4 + 2;
     const int j = 7;
@@ -12,5 +14,16 @@ int main () {
         i = i + 2;
     }
 
+    toto(i);
+
     return 0;
 }
+
+
+void toto (int lulz)
+{
+    int lalz;
+
+    lalz = lulz;
+}
+
