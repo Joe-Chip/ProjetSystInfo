@@ -1,5 +1,7 @@
 void toto (int lulz);
 
+int globolol;
+
 int main () {
     int i = 4 + 2;
     const int j = 7;

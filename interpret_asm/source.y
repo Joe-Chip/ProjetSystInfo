@@ -10,7 +10,7 @@
 %token tAFC tCOP
 %token tJMP tJMF
 %token tAND tOR
-%token tEQU tDIF tSUP tINF
+%token tEQU tSUP tINF
 %token tCALL tRET
 %token <nb> tOPERAND
 %token tNEWLINE
@@ -35,7 +35,6 @@ Instruction     : Addition
                 | Et
                 | Ou
                 | Egal
-                | Different
                 | Inferieur
                 | Superieur
                 | Call
@@ -74,9 +73,6 @@ Ou              : tOR tOPERAND tOPERAND tOPERAND tNEWLINE
 Egal            : tEQU tOPERAND tOPERAND tOPERAND tNEWLINE
                     {add_ligne(EQU, $2, $3, $4);}
                 ;
-Different       : tDIF tOPERAND tOPERAND tOPERAND tNEWLINE
-                    {add_ligne(DIF, $2, $3, $4);}
-                ;
 Inferieur       : tINF tOPERAND tOPERAND tOPERAND tNEWLINE
                     {add_ligne(INF, $2, $3, $4);}
                 ;
@@ -94,7 +90,11 @@ Return          : tRET
 
 int main ()
 {
-    return yyparse();
+    if (yyparse() == 0) {
+        execute();
+    }
+
+    return 0;
 }
 
 

@@ -20,6 +20,22 @@ void add_ligne(int cop, int op1, int op2, int op3)
 }
 
 
+// Affiche le contenu de la table des variables
+void aff_vars()
+{
+    int i;
+
+    printf("===================== Table variables ====================");
+    for (i = 0; i < TAILLE_TABLE_VARS; i++) {
+        printf("%d ", table_variables[i]);
+        if (i % 10 == 0) {
+            printf("\n");
+        }
+    }
+    printf("==========================================================");
+}
+
+
 // Execution du code
 void execute()
 {
@@ -30,13 +46,79 @@ void execute()
     while (ligne < ligne_finale) {
         switch (code[ligne][0]) {
         case ADD:
-            table_variable[code[ligne][1]] = table_variable[code[ligne][2]]
-                                           + table_variable[code[ligne][3]];
+            table_variables[code[ligne][1]] = table_variables[code[ligne][2]]
+                                            + table_variables[code[ligne][3]];
             break; 
-
-
+        case SOU:
+            table_variables[code[ligne][1]] = table_variables[code[ligne][2]]
+                                            - table_variables[code[ligne][3]];
+            break;
+        case MUL:
+            table_variables[code[ligne][1]] = table_variables[code[ligne][2]]
+                                            * table_variables[code[ligne][3]];
+            break; 
+        case DIV:
+            table_variables[code[ligne][1]] = table_variables[code[ligne][2]]
+                                            / table_variables[code[ligne][3]];
+            break; 
+        case COP:
+            table_variables[code[ligne][1]] = table_variables[code[ligne][2]];
+            break;
+        case AFC:
+            table_variables[code[ligne][1]] = code[ligne][2];
+            break;
+        case JMP:
+            ligne = code[ligne][1];
+            break; 
+        case JMF:
+            if (code[ligne][1]) {
+                ligne = code[ligne][2];
+            }
+            break;
+        case INF:
+            if (table_variables[code[ligne][2]]
+                < table_variables[code[ligne][3]]) {
+                table_variables[code[ligne][1]] = 1;
+            } else {
+                table_variables[code[ligne][1]] = 0;
+            }
+            break; 
+        case SUP:
+            if (table_variables[code[ligne][2]]
+                > table_variables[code[ligne][3]]) {
+                table_variables[code[ligne][1]] = 1;
+            } else {
+                table_variables[code[ligne][1]] = 0;
+            }
+            break;
+        case EQU:
+            if (table_variables[code[ligne][2]]
+                == table_variables[code[ligne][3]]) {
+                table_variables[code[ligne][1]] = 1;
+            } else {
+                table_variables[code[ligne][1]] = 0;
+            }
+            break; 
+        case PRI:
+            printf("%d\n", code[ligne][1]);
+            break;
+        case AND:
+            if (table_variables[code[ligne][2]]
+                && table_variables[code[ligne][3]]) {
+                table_variables[code[ligne][1]] = 1;
+            } else {
+                table_variables[code[ligne][1]] = 0;
+            }
+            break;
+        case OR:
+            if (table_variables[code[ligne][2]]
+                || table_variables[code[ligne][3]]) {
+                table_variables[code[ligne][1]] = 1;
+            } else {
+                table_variables[code[ligne][1]] = 0;
+            }
+            break;
         }
-
     }
 }
 

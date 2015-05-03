@@ -15,15 +15,15 @@
 #define COP 5
 #define AFC 6
 #define JMP 7
-#define JMF 7
-#define INF 8
-#define SUP 9
-#define EQU 10
-#define PRI 11
-#define AND 12
-#define OR 13
-#define CALL 14
-#define RET 15
+#define JMF 8
+#define INF 9
+#define SUP 10
+#define EQU 11
+#define PRI 12
+#define AND 13
+#define OR 14
+#define CALL 15
+#define RET 16
 
 #define NO_OPERANDE 1000000000
 
@@ -52,6 +52,9 @@ int code[NB_LIGNES_CODE_MAX][4];
 
 // Ajoute une ligne de code dans la table
 void add_ligne(int cop, int op1, int op2, int op3);
+
+// Affiche le contenu de la table des variables
+void aff_vars();
 
 // Execution du code
 void execute();
