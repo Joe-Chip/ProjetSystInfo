@@ -155,7 +155,9 @@ Affectation     : tID tEGAL Expression tPV
                      }
                      ts_delete_tmp();}
                 ;
-Print           : tPRINT tPO tPF tPV
+Print           : tPRINT tPO Expression tPF tPV
+                    {fprintf(output_tmp, "PRI %d\n", $3);
+                     compteur_asm ++;}
                 ;
 If              : tIF tPO Trait_Cond tPF Corps        %prec IFSEUL
                     {add_saut(compteur_asm + 1);}
@@ -237,7 +239,8 @@ Operande        : Expression tEQUI Expression
 Return          : tRETURN tNB tPV
                 ;
 Prototype       : Type tID
-                    {if (tf_get_position($2) == -1) {
+                    {// TODO : Test main
+                     if (tf_get_position($2) == -1) {
                         fonct_courante = tf_add_fonct($2, $1, compteur_asm);
                      } else {
                         tf_init_addr($2, $1, compteur_asm);

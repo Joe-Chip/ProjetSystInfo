@@ -36,6 +36,12 @@ extern FILE * output;
 // Position dans la table des symboles
 extern int pos_symbole;
 
+// Flag indiquant si le main a été rencontré
+extern int main_ok;
+
+// Chaine main, sert à identifier le main
+extern char tab_main[5];
+
 // Stocke le type des variables à créer (par default : int non constant)
 extern int type_courant;
 

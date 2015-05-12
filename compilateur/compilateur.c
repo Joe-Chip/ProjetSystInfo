@@ -7,6 +7,12 @@ FILE * output = NULL;
 // Indique la positiion actuelle dans la table des symboles
 int pos_symbole = 0;
 
+// Flag indiquant si le main a été rencontré
+int main_ok = 0;
+
+// Chaine main, sert à identifier le main
+char tab_main[5] = "main";
+
 // Stocke le type des variables à créer (par default : int non constant)
 int type_courant = TYPE_INT;
 
