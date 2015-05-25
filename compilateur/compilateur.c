@@ -4,26 +4,25 @@
 FILE * output_tmp = NULL;
 FILE * output = NULL;
 
-// Indique la positiion actuelle dans la table des symboles
+// Indique la première case vide dans la table des symboles
 int pos_symbole = 0;
 
-// Flag indiquant si le main a été rencontré
-int main_ok = 0;
+// Adresse du main
+// Si la valeur reste à 0, il n'y a pas de main
+int adr_main = 0;
 
-// Chaine main, sert à identifier le main
-char tab_main[5] = "main";
-
-// Stocke le type des variables à créer (par default : int non constant)
+// Stocke le type des variables à créer (par defaut : int non constant)
 int type_courant = TYPE_INT;
 
-// Stocke le niveau d'appel de la fonction en cours
-int niveau_courant = 0;
+// Flag indquant les variables gobales (passe à 0 une fois qu'elles sont finies)
+int vars_globales = 1;
 
 // Compteur du nombre de lignes ecrites en assembleur
 int compteur_asm = 0;
 
 // Indique la position actuelle dans la table des sauts
-int pos_tab_saut = 0;
+// On commence à 1, le premier saut du programme va obligatoirement au main
+int pos_tab_saut = 1;
 
 
 
@@ -41,7 +40,7 @@ void ts_create(char * nom, int type, int is_init, int is_const)
     table_symboles[pos_symbole].type = type;
     table_symboles[pos_symbole].is_init = is_init;
     table_symboles[pos_symbole].is_const = is_const;
-    table_symboles[pos_symbole].niveau = niveau_courant;
+    table_symboles[pos_symbole].is_global = vars_globales;
     pos_symbole++;
 }
 
@@ -56,20 +55,17 @@ void ts_init(char * nom)
 
 /*
  * Retourne l'adresse dans la table de la variable dont le nom est passé
- * en argument. Retourne -1 su la variable n'est pas dans la table
+ * en argument. Retourne -1 si la variable n'est pas dans la table
  */
 int ts_get_addr(char * nom)
 {
     int i = pos_symbole - 1;
     int addr = -1;
-    while (i >= 0 && addr == -1) {
-        if (table_symboles[i].niveau == niveau_courant
-            || table_symboles[i].niveau == niveau_courant) {
-            if (strcmp(table_symboles[i].nom, nom) == 0) {
-                addr = i;
-            }
+    while (i < pos_symbole && addr == -1) {
+        if (strcmp(table_symboles[i].nom, nom) == 0) {
+            addr = i;
         }
-        i--;
+        i++;
     }
     return addr;
 }
@@ -87,7 +83,7 @@ int ts_is_const(char * nom)
 /*
  * Retire toutes les variables du niveau courant de la table des symboles
  * Utilise en sortie d'un bloc
- */
+
 void ts_vider_dernier_niveau()
 {
     int i = pos_symbole - 1;
@@ -101,7 +97,7 @@ void ts_vider_dernier_niveau()
         i --;
         pos_symbole --;
     }
-}
+}*/
 
 
 /*
@@ -114,7 +110,7 @@ int ts_create_tmp()
     table_symboles[pos_symbole].type = TYPE_INT;
     table_symboles[pos_symbole].is_init = VAR_INIT;
     table_symboles[pos_symbole].is_const = VAR_NON_CONST;
-    table_symboles[pos_symbole].niveau = niveau_courant;
+    table_symboles[pos_symbole].is_global = 0;
     pos_symbole++;
     return pos_symbole - 1;
 }
@@ -139,7 +135,7 @@ int ts_create_from_param(struct t_param param)
     table_symboles[pos_symbole].type = param.type;
     table_symboles[pos_symbole].is_init = VAR_INIT;
     table_symboles[pos_symbole].is_const = param.is_const;
-    table_symboles[pos_symbole].niveau = niveau_courant;
+    table_symboles[pos_symbole].is_global = 1;
     pos_symbole++;
 
     return pos_symbole - 1;
@@ -158,7 +154,7 @@ void display_table_symb()
         printf("Var %d : %s, Type : %d, INIT : %d, CONST : %d, Niveau : %d\n",
                i, table_symboles[i].nom, table_symboles[i].type,
                table_symboles[i].is_init, table_symboles[i].is_const,
-               table_symboles[i].niveau); 
+               table_symboles[i].is_global); 
     }
     printf("======================================================\n\n");
 }
@@ -181,10 +177,12 @@ void completer_sauts ()
 {
     int jump_traites = 0;
     int char_cops, taille_a_copier, adr_fonct;
-    char * ligne, * adr_jump, *appel_fonct;
+    char * ligne, * adr_jump, *appel_fonct, *nom_fonct;
     char adr_jmp[] = "adr_jmp";
 //    char adr_fct[] = "adr_fct";
     char call[] = "CALL";
+
+    nom_fonct = malloc(TAILLE_LIGNE * sizeof(char));
 
     ligne = malloc(TAILLE_LIGNE * sizeof(char));
 
@@ -215,7 +213,8 @@ void completer_sauts ()
             }
             // Ajout de l'adresse de la fonction
             appel_fonct = strdup(ligne + 5);
-            fprintf(output, "%d\n", tf_get_addr(appel_fonct));
+            strncpy(nom_fonct, appel_fonct, strlen(appel_fonct)-1);
+            fprintf(output, "%d\n", tf_get_addr(nom_fonct));
         } else {
             fputs(ligne, output);
         }

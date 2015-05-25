@@ -1,8 +1,5 @@
 #include "fonctions.h"
 
-// Variable indiqant si le main a ete lu
-extern int main_fini;
-
 // Position dans la table de fonctions
 int pos_fonction = 0;
 
@@ -43,7 +40,7 @@ void tf_init_param(char * nom, int type, int is_const)
     table_fonctions[pos_fonction-1].tab_params[nb_param].nom = strdup(nom);
     table_fonctions[pos_fonction-1].tab_params[nb_param].type = type;
     table_fonctions[pos_fonction-1].tab_params[nb_param].is_const = is_const;
-    table_fonctions[pos_fonction].nb_params ++;
+    table_fonctions[pos_fonction-1].nb_params ++;
 }
 
 
@@ -61,7 +58,7 @@ int tf_init_addr(char * nom, int type, int addr)
     if ((position = tf_get_position(nom)) != -1) {
         if (table_fonctions[position].type_retour == type) {
             // Si on a le bon nom et le bon type, tout va bien
-            table_fonctions[pos_fonction].adresse = addr;
+            table_fonctions[position].adresse = addr;
         } else {
             // Si le type n'est pas bon, on a une erreur
             position = -2;
@@ -83,7 +80,7 @@ int tf_get_position(char * nom)
     while (i < pos_fonction) {
         // Parcours de la boucle jusqu'a une fonction avec le bon nom
         if (strcmp(table_fonctions[i].nom, nom) == 0) {
-            // On a troue notre fonction, on peut sortir de la boucle
+            // On a trouve notre fonction, on peut sortir de la boucle
             position = i;
             i = pos_fonction;
         }

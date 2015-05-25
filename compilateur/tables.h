@@ -15,7 +15,7 @@ struct type_symbole {
     int type;
     int is_init;
     int is_const;
-    int niveau;
+    int is_global;
 };
 
 struct type_symbole table_symboles[TAILLE_TAB_SYMB];

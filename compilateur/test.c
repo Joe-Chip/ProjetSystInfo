@@ -1,6 +1,6 @@
-void toto (int lulz);
+int globolol = 0;
 
-int globolol;
+void toto (int lulz);
 
 int main () {
     int i = 4 + 2;

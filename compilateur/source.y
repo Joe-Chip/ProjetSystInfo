@@ -27,22 +27,40 @@ int yydebug=1;
 
 %%
 
-Start           : Globaux Main Globaux
-                | Globaux Main
+Start           :   {// Premier jump : direction le main
+                     fprintf(output_tmp, "JMP adr_jmp\n");
+                     compteur_asm ++;
+                     // Si cette valeur n'a pas change d'ici la fin - erreur
+                     table_sauts[0] = 0;}
+                 Vars_Globales
+                ;
+Vars_Globales   : L_Decl Vars_Globales
+                | Prototypes
+                ;
+Prototypes      : Prototype tPV Prototypes
+                | Globales
+                ;
+Globales        : Inst_Globales
+                    {display_table_fonct();
+                     // Verification que le main a bien ete rencontre
+                     if (table_sauts[0] == 0) {
+                        yyerror("Pas de main");
+                     }}
+                ;
+Inst_Globales   : Inst_Globale Inst_Globales
+                | Inst_Globale
+                ;
+Inst_Globale    : Decl_Fonct
                 | Main
                 ;
-Globaux         : Global Globaux
-                | Global
-                ;
-Global          : Prototype tPV
-                | L_Decl
-                | Decl_Fonct
-                ;
-Main            : tINT tMAIN tPO tPF
-                    {niveau_courant ++;}
+Main            : Type_Const tMAIN tPO tPF
+                    {// Vérification du type du main
+                     if (type_courant != TYPE_INT) {
+                        yyerror("Type main incorrect");
+                     }
+                     // Initialisation du saut vers le main
+                     table_sauts[0] = compteur_asm + 1;}
                   Corps
-                    {ts_vider_dernier_niveau();
-                     niveau_courant --;}
                 ;
 Corps           : tAO Body tAF
                 | Instruction
@@ -60,7 +78,7 @@ Type            : tINT {$$ = TYPE_INT;}
 Declarations    : L_Decl Declarations 
                 | L_Decl
                 ;
-L_Decl          : Type_Const Seq_Decl tPV 
+L_Decl          : Type_Const Seq_Decl tPV {display_table_symb();} 
                 ;
 Seq_Decl        : Decl tVIRGULE Seq_Decl 
                 | Decl 
@@ -147,7 +165,9 @@ Instruction     : Affectation
                 ;
 Affectation     : tID tEGAL Expression tPV
                     {int addr = ts_get_addr($1);
-                     if (addr >= 0) {
+                     if (addr == -1) {
+                        yyerror("La variable n'existe pas" );
+                     } else {
                         if (ts_is_const($1) == VAR_NON_CONST) {
                             fprintf(output_tmp, "COP %d %d\n", addr, $3);
                             compteur_asm ++;
@@ -238,12 +258,14 @@ Operande        : Expression tEQUI Expression
                 ;
 Return          : tRETURN tNB tPV
                 ;
-Prototype       : Type tID
-                    {// TODO : Test main
-                     if (tf_get_position($2) == -1) {
-                        fonct_courante = tf_add_fonct($2, $1, compteur_asm);
+Prototype       : Type_Const tID
+                    {if (tf_get_position($2) == -1) {
+                        // Si cette foncction n'est pas dans la table -> ajout
+                        fonct_courante = tf_add_fonct($2, type_courant,
+                                                      compteur_asm + 1);
                      } else {
-                        tf_init_addr($2, $1, compteur_asm);
+                        // Si elle est présente -> mise à jour de l'adresse
+                        tf_init_addr($2, type_courant, compteur_asm + 1);
                      }
                      params_traites = 0;}
                   Params_Proto_Pt
@@ -258,15 +280,17 @@ Params_Proto    : Param_Proto tVIRGULE Params_Proto
 Param_Proto     : Type_Const tID
                     {if (tf_check_params_init(fonct_courante)
                          == PARAMS_NON_INIT) {
+                        // On est un prototype ou la déclaration directe
                         switch(type_courant) {
                         case TYPE_INT:
-                            tf_init_param($2, TYPE_INT, VAR_CONST);
+                            tf_init_param($2, TYPE_INT, VAR_NON_CONST);
                             break;
                         case TYPE_CONST_INT:
-                            tf_init_param($2, TYPE_INT, VAR_NON_CONST);
+                            tf_init_param($2, TYPE_INT, VAR_CONST);
                             break;
                         }
                      } else {
+                        // On a deja vu un proto, verification de la coherence
                         tf_check_param($2, type_courant,
                                        tf_get_next_param(fonct_courante));
                      }}
@@ -274,12 +298,11 @@ Param_Proto     : Type_Const tID
 Decl_Fonct      : Prototype Corps
                 ;
 Appel_Fonct     : tID
-                    {niveau_courant ++;
-                     fonct_courante = tf_get_position($1);}
+                    {fonct_courante = tf_get_position($1);}
                   Params_Appel_Pt tPV
                     {fprintf(output_tmp, "CALL %s\n", $1);
+                     compteur_asm ++;
                      int addr_result = 0;
-                     niveau_courant --;
                      $$ = addr_result;}
                 ;
 Params_Appel_Pt : tPO Params_Appel tPF

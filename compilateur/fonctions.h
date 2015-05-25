@@ -9,18 +9,11 @@
 #include "tables.h"
 
 
-// Constante pour indiquer si le main a ete lu
-#define MAIN_NON_FINI 0
-#define MAIN_FINI 1
-
 // Constante uilisees pour la verification de la declaration des parametres
 #define PARAM_NON_CONFORME 0
 #define PARAM_OK 1
 #define PARAMS_NON_INIT 2
 #define PARAMS_OK 3
-
-// Variable indiqant si le main a ete lu
-extern int main_fini;
 
 // Position dans la table de fonctions
 extern int pos_fonction;

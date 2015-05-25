@@ -33,26 +33,27 @@
 extern FILE * output_tmp;
 extern FILE * output;
 
-// Position dans la table des symboles
+// Indique la première case vide dans la table des symboles
 extern int pos_symbole;
 
-// Flag indiquant si le main a été rencontré
-extern int main_ok;
-
-// Chaine main, sert à identifier le main
-extern char tab_main[5];
+// Adresse du main
+// Si la valeur reste à 0, il n'y a pas de main
+extern int adr_main;
 
 // Stocke le type des variables à créer (par default : int non constant)
 extern int type_courant;
 
-// Stocke le niveau d'appel de la fonction en cours
-extern int niveau_courant;
+// Flag indquant les variables gobales (passe à 0 une fois qu'elles sont finies)
+extern int vars_globles;
 
 // Compteur du nombre de lignes ecrites en assembleur
 extern int compteur_asm;
 
 // Table des sauts : contient l'adresse de destination de chaque saut
 int table_sauts[TAILLE_TAB_SAUTS];
+
+// Indique la position actuelle dans la table des sauts
+// On commence à 1, le premier saut du programme va obligatoirement au main
 extern int pos_tab_saut;
 
 

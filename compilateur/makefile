@@ -9,7 +9,7 @@ clean :
 	rm lex.yy.c y.tab.* *.o lexgo *.asm
 
 lexgo : source.* $(OFILES)
-	yacc -tvd source.y
+	yacc -vd source.y
 	lex source.l
 	gcc $(CFLAGS) y.tab.c lex.yy.c $(OFILES) -ll -o $@
 
