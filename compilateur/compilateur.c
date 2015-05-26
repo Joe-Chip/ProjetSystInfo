@@ -7,6 +7,9 @@ FILE * output = NULL;
 // Indique la première case vide dans la table des symboles
 int pos_symbole = 0;
 
+// Stocke le pointeur indiquant le début des variable locales
+int base_pointer = 0;
+
 // Adresse du main
 // Si la valeur reste à 0, il n'y a pas de main
 int adr_main = 0;
@@ -59,13 +62,26 @@ void ts_init(char * nom)
  */
 int ts_get_addr(char * nom)
 {
-    int i = pos_symbole - 1;
+    int i = 0;
     int addr = -1;
+
+    // Parcours des variales locales
     while (i < pos_symbole && addr == -1) {
-        if (strcmp(table_symboles[i].nom, nom) == 0) {
+        if (strcmp(table_symboles[i + base_pointer].nom, nom) == 0) {
             addr = i;
         }
         i++;
+    }
+    // Si la variabe n'est pas locale
+    if (addr == -1) {
+        i = 0;
+        // Parcours ds variables globales
+        while (table_symboles[i].is_global) {
+            if (strcmp(table_symboles[i].nom, nom) == 0) {
+                addr = i - base_pointer;
+            }
+            i++;
+        }
     }
     return addr;
 }
@@ -135,7 +151,7 @@ int ts_create_from_param(struct t_param param)
     table_symboles[pos_symbole].type = param.type;
     table_symboles[pos_symbole].is_init = VAR_INIT;
     table_symboles[pos_symbole].is_const = param.is_const;
-    table_symboles[pos_symbole].is_global = 1;
+    table_symboles[pos_symbole].is_global = 0;
     pos_symbole++;
 
     return pos_symbole - 1;
@@ -151,7 +167,7 @@ void display_table_symb()
 
     printf("\n==================TABLE DES SYMBOLES==================\n");
     for (i = 0; i < pos_symbole; i++) {
-        printf("Var %d : %s, Type : %d, INIT : %d, CONST : %d, Niveau : %d\n",
+        printf("Var %d : %s, Type : %d, INIT : %d, CONST : %d, Globale : %d\n",
                i, table_symboles[i].nom, table_symboles[i].type,
                table_symboles[i].is_init, table_symboles[i].is_const,
                table_symboles[i].is_global); 

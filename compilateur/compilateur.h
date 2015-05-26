@@ -36,6 +36,9 @@ extern FILE * output;
 // Indique la première case vide dans la table des symboles
 extern int pos_symbole;
 
+// Stocke le pointeur indiquant le début des variable locales
+extern int base_pointer;
+
 // Adresse du main
 // Si la valeur reste à 0, il n'y a pas de main
 extern int adr_main;
