@@ -7,12 +7,11 @@ FILE * output = NULL;
 // Indique la première case vide dans la table des symboles
 int pos_symbole = 0;
 
+// Compte le nombre de variabes globales, pour savoir ou inserer le saut au main
+int compteur_vars_glo = 0;
+
 // Stocke le pointeur indiquant le début des variable locales
 int base_pointer = 0;
-
-// Adresse du main
-// Si la valeur reste à 0, il n'y a pas de main
-int adr_main = 0;
 
 // Stocke le type des variables à créer (par defaut : int non constant)
 int type_courant = TYPE_INT;
@@ -21,7 +20,8 @@ int type_courant = TYPE_INT;
 int vars_globales = 1;
 
 // Compteur du nombre de lignes ecrites en assembleur
-int compteur_asm = 0;
+// Demarre a un pour prendre en compte le saut vers le main
+int compteur_asm = 1;
 
 // Indique la position actuelle dans la table des sauts
 // On commence à 1, le premier saut du programme va obligatoirement au main
@@ -159,6 +159,30 @@ int ts_create_from_param(struct t_param param)
 
 
 /*
+ * Compte le nombre d'instructions nécessaires pour les variables globales
+ */
+int ts_compter_variables_globales()
+{
+    int i;
+    int compte = 0;
+
+    for (i = 0; i < pos_symbole; i++) {
+        if (table_symboles[i].is_global == 1) {
+            if (table_symboles[i].is_init == 1) {
+                // Il faut 2 instructions pour creer et initialiser 
+                compte += 2;
+            } else {
+                // Une seule pour juste creer
+                compte ++;
+            }
+        }
+    }
+
+    return compte;
+}
+
+
+/*
  * Affiche la table des symboles. Utilisee pour le debug
  */
 void display_table_symb()
@@ -192,6 +216,7 @@ void add_saut(int destination)
 void completer_sauts ()
 {
     int jump_traites = 0;
+    int lignes_traitees = 0;
     int char_cops, taille_a_copier, adr_fonct;
     char * ligne, * adr_jump, *appel_fonct, *nom_fonct;
     char adr_jmp[] = "adr_jmp";
@@ -209,6 +234,11 @@ void completer_sauts ()
     
     // Recopie dans le ficher de sortie
     while (ligne != NULL) {
+        if (lignes_traitees == compteur_vars_glo) {
+            fprintf(output, "JMP %d\n", table_sauts[0]);
+            lignes_traitees ++;
+        }
+
         adr_jump = strstr(ligne, adr_jmp);
         appel_fonct = strstr(ligne, call);
 
@@ -235,6 +265,7 @@ void completer_sauts ()
             fputs(ligne, output);
         }
         ligne = fgets(ligne, TAILLE_LIGNE, output_tmp);
+        lignes_traitees ++;
     }
 }
 

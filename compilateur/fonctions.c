@@ -9,6 +9,9 @@ int fonct_courante = 0;
 // Indice du parametre en traitment
 int params_traites;
 
+// Flag indiquant si le return de la fonction est bien la derniere instruction
+int flag_return = 0;
+
 /******************************************************************************
 **************** Fonctions de gestion de la table de fonctions ****************
 ******************************************************************************/

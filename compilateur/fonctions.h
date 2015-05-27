@@ -24,6 +24,9 @@ extern int fonct_courante;
 // Indice du parametre en traitment
 extern int params_traites;
 
+// Flag indiquant si le return de la fonction est bien la derniere instruction
+extern int flag_return;
+
 /******************************************************************************
 **************** Fonctions de gestion de la table de fonctions ****************
 ******************************************************************************/

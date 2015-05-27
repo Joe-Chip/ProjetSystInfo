@@ -36,6 +36,9 @@ extern FILE * output;
 // Indique la première case vide dans la table des symboles
 extern int pos_symbole;
 
+// Compte le nombre de variabes globales, pour savoir ou inserer le saut au main
+extern int compteur_vars_glo;
+
 // Stocke le pointeur indiquant le début des variable locales
 extern int base_pointer;
 
@@ -47,7 +50,7 @@ extern int adr_main;
 extern int type_courant;
 
 // Flag indquant les variables gobales (passe à 0 une fois qu'elles sont finies)
-extern int vars_globles;
+extern int vars_globales;
 
 // Compteur du nombre de lignes ecrites en assembleur
 extern int compteur_asm;
@@ -106,6 +109,11 @@ void ts_delete_tmp();
  * Cree une variable à partir d'un parametre de fonction
  */
 int ts_create_from_param(struct t_param param);
+
+/*
+ * Compte le nombre d'instructions nécesaires pour les variables globales
+ */
+int ts_compter_variables_globales();
 
 /*
  * Affiche la table des symboles. Utilisee pour le debug

@@ -27,10 +27,7 @@ int yydebug=1;
 
 %%
 
-Start           :   {// Premier jump : direction le main
-                     fprintf(output_tmp, "JMP adr_jmp\n");
-                     compteur_asm ++;
-                     // Si cette valeur n'a pas change d'ici la fin - erreur
+Start           :   {// Si cette valeur n'a pas change a la fin -> pas de main
                      table_sauts[0] = 0;}
                  Vars_Globales
                 ;
@@ -54,12 +51,16 @@ Inst_Globale    : Decl_Fonct
                 | Main
                 ;
 Main            : Type_Const tMAIN tPO tPF
-                    {// Vérification du type du main
+                    {// Les variables ne sont plus globales
+                     vars_globales = 0;
+                     // Vérification du type du main
                      if (type_courant != TYPE_INT) {
                         yyerror("Type main incorrect");
                      }
                      // Initialisation du saut vers le main
-                     table_sauts[0] = compteur_asm + 1;}
+                     table_sauts[0] = compteur_asm + 1;
+                     // Comptage du nombre d'instructions avant le saut
+                     compteur_vars_glo = ts_compter_variables_globales();}
                   Corps
                 ;
 Corps           : tAO Body tAF
@@ -173,20 +174,28 @@ Affectation     : tID tEGAL Expression tPV
                             compteur_asm ++;
                         }
                      }
-                     ts_delete_tmp();}
+                     ts_delete_tmp();
+                     // Flag retour
+                     flag_return = 0;}
                 ;
 Print           : tPRINT tPO Expression tPF tPV
                     {fprintf(output_tmp, "PRI %d\n", $3);
-                     compteur_asm ++;}
+                     compteur_asm ++;
+                     // Flag retour
+                     flag_return = 0;}
                 ;
 If              : tIF tPO Trait_Cond tPF Corps        %prec IFSEUL
-                    {add_saut(compteur_asm + 1);}
+                    {add_saut(compteur_asm + 1);
+                     // Flag retour
+                     flag_return = 0;}
                 | tIF tPO Trait_Cond tPF Corps tELSE
                     {add_saut(compteur_asm + 2);
                      fprintf(output_tmp, "JMP adr_jmp\n");
                      compteur_asm ++;}
                   Corps
-                    {add_saut(compteur_asm + 1);}
+                    {add_saut(compteur_asm + 1);
+                     // Flag retour
+                     flag_return = 0;}
                 ;
 Trait_Cond      : Condition
                     {fprintf(output_tmp, "JMF %d adr_jmp\n", $1);
@@ -197,7 +206,9 @@ While           : tWHILE tPO Get_ASM_Compt Trait_Cond tPF Corps
                     {add_saut(compteur_asm + 2);
                      fprintf(output_tmp, "JMP adr_jmp\n");
                      compteur_asm ++;
-                     add_saut($3);}
+                     add_saut($3);
+                     // Flag retour
+                     flag_return = 0;}
                 ;
 Get_ASM_Compt   :   {$$ = compteur_asm + 1;}
                 ; 
@@ -256,7 +267,12 @@ Operande        : Expression tEQUI Expression
                 | tPO Condition tPF
                     {$$ = $2;}
                 ;
-Return          : tRETURN tNB tPV
+Return          : tRETURN Expression tPV
+                    {fprintf(output_tmp, "COP %d %d\n", -2, $2);
+                     fprintf(output_tmp, "RET %d\n", -1);
+                     compteur_asm += 2;
+                     // Flag retour
+                     flag_return = 1;}
                 ;
 Prototype       : Type_Const tID
                     {if (tf_get_position($2) == -1) {
@@ -267,7 +283,9 @@ Prototype       : Type_Const tID
                         // Si elle est présente -> mise à jour de l'adresse
                         tf_init_addr($2, type_courant, compteur_asm + 1);
                      }
-                     params_traites = 0;}
+                     params_traites = 0;
+                     // Les variables ne sont plus globales
+                     vars_globales = 0;}
                   Params_Proto_Pt
                     {tf_set_params_init($2);}
                 ;
@@ -296,6 +314,10 @@ Param_Proto     : Type_Const tID
                      }}
                 ;
 Decl_Fonct      : Prototype Corps
+                    {if (!flag_return) {
+                        // Si la derniere instruction n'est pas un return
+                        fprintf(output_tmp, "RET %d\n", -1);
+                     }}
                 ;
 Appel_Fonct     : tID
                     {fonct_courante = tf_get_position($1);}
@@ -303,7 +325,9 @@ Appel_Fonct     : tID
                     {fprintf(output_tmp, "CALL %s\n", $1);
                      compteur_asm ++;
                      int addr_result = 0;
-                     $$ = addr_result;}
+                     $$ = addr_result;
+                     // Flag retour
+                     flag_return = 0;}
                 ;
 Params_Appel_Pt : tPO Params_Appel tPF
                 | tPO tPF
