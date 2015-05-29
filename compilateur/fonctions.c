@@ -136,9 +136,11 @@ int tf_check_param(char * nom, int param_type, struct t_param param)
     case TYPE_INT:
         type = TYPE_INT;
         is_const = VAR_NON_CONST;
+        break;
     case TYPE_CONST_INT:
         type = TYPE_INT;
         is_const = VAR_CONST;
+        break;
     }
 
     if ((strcmp(nom, param.nom) != 0) || (type != param.type)
@@ -150,6 +152,12 @@ int tf_check_param(char * nom, int param_type, struct t_param param)
 }
 
 
+/*
+ * Retourne le nombr de parametres de la fonction
+ */
+int tf_get_nb_params(int fonction) {
+    return table_fonctions[fonction].nb_params;
+}
 
 /*
  * Recupere le prochain parametre a copier dans la table des symboles

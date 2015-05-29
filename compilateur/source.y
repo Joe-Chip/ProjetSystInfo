@@ -53,6 +53,7 @@ Inst_Globale    : Decl_Fonct
 Main            : Type_Const tMAIN tPO tPF
                     {// Les variables ne sont plus globales
                      vars_globales = 0;
+                     base_pointer = pos_symbole;
                      // Vérification du type du main
                      if (type_courant != TYPE_INT) {
                         yyerror("Type main incorrect");
@@ -62,6 +63,8 @@ Main            : Type_Const tMAIN tPO tPF
                      // Comptage du nombre d'instructions avant le saut
                      compteur_vars_glo = ts_compter_variables_globales();}
                   Corps
+                    {ts_vider_dernier_niveau();
+                     base_pointer = 0;}
                 ;
 Corps           : tAO Body tAF
                 | Instruction
@@ -162,6 +165,10 @@ Instruction     : Affectation
                 | While
                 | Return
                 | Appel_Fonct
+                    {// Nettoyage apres appel de fonction
+                     ts_delete_tmp();
+                     ts_delete_tmp();
+                     ts_delete_tmp();}
                 | error
                 ;
 Affectation     : tID tEGAL Expression tPV
@@ -269,8 +276,9 @@ Operande        : Expression tEQUI Expression
                 ;
 Return          : tRETURN Expression tPV
                     {fprintf(output_tmp, "COP %d %d\n", -2, $2);
-                     fprintf(output_tmp, "RET %d\n", -1);
+                     fprintf(output_tmp, "RET\n");
                      compteur_asm += 2;
+                     ts_delete_tmp();
                      // Flag retour
                      flag_return = 1;}
                 ;
@@ -309,22 +317,44 @@ Param_Proto     : Type_Const tID
                         }
                      } else {
                         // On a deja vu un proto, verification de la coherence
-                        tf_check_param($2, type_courant,
-                                       tf_get_next_param(fonct_courante));
+                        if (tf_check_param($2, type_courant,
+                                           tf_get_next_param(fonct_courante))
+                            == PARAM_NON_CONFORME) {
+                            yyerror("Erreur parametre");
+                        }
                      }}
                 ;
-Decl_Fonct      : Prototype Corps
+Decl_Fonct      : Prototype 
+                    {int i, adr_param;
+                     params_traites = 0;
+                     for (i = 0; i < tf_get_nb_params(fonct_courante); i++) {
+                        adr_param = ts_create_from_param(
+                                        tf_get_next_param(fonct_courante));
+                     }
+                     base_pointer = pos_symbole;}
+                  Corps
                     {if (!flag_return) {
                         // Si la derniere instruction n'est pas un return
-                        fprintf(output_tmp, "RET %d\n", -1);
-                     }}
+                        fprintf(output_tmp, "RET\n");
+                     }
+                     ts_vider_dernier_niveau();
+                     base_pointer = 0;}
                 ;
 Appel_Fonct     : tID
                     {fonct_courante = tf_get_position($1);}
                   Params_Appel_Pt tPV
-                    {fprintf(output_tmp, "CALL %s\n", $1);
-                     compteur_asm ++;
-                     int addr_result = 0;
+                    {// Variable temporaire pour le résultat
+                     int addr_result = ts_create_tmp();
+                     // Variable temporaire pour l'adresse de retour
+                     int addr_retour = ts_create_tmp();
+                     fprintf(output_tmp, "COP %d %d\n",
+                             addr_retour, compteur_asm + 4);
+                     // Sauvegarde du base pointer
+                     ts_create(nom_bp, TYPE_INT, VAR_INIT, VAR_CONST);
+                     fprintf(output_tmp, "COP BP %d\n", base_pointer);
+                     // Appel de la fonction
+                     fprintf(output_tmp, "CALL %s\n", $1);
+                     compteur_asm += 3;
                      $$ = addr_result;
                      // Flag retour
                      flag_return = 0;}

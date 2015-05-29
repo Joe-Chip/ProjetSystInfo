@@ -42,6 +42,9 @@ extern int compteur_vars_glo;
 // Stocke le pointeur indiquant le début des variable locales
 extern int base_pointer;
 
+// Nom du base pointer utilisé par la table des symboles
+extern char nom_bp[25];
+
 // Adresse du main
 // Si la valeur reste à 0, il n'y a pas de main
 extern int adr_main;

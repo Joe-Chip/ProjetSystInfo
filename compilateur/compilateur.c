@@ -10,8 +10,11 @@ int pos_symbole = 0;
 // Compte le nombre de variabes globales, pour savoir ou inserer le saut au main
 int compteur_vars_glo = 0;
 
-// Stocke le pointeur indiquant le début des variable locales
+// Stocke le pointeur indiquant le début des variables locales
 int base_pointer = 0;
+
+// Nom du base pointer utilisé par la table des symboles
+char nom_bp[25] =  "ceci_est_le_base_pointer";
 
 // Stocke le type des variables à créer (par defaut : int non constant)
 int type_courant = TYPE_INT;
@@ -99,21 +102,23 @@ int ts_is_const(char * nom)
 /*
  * Retire toutes les variables du niveau courant de la table des symboles
  * Utilise en sortie d'un bloc
-
+ */
 void ts_vider_dernier_niveau()
 {
-    int i = pos_symbole - 1;
+    int i;
+    int pos_symbole_tmp = pos_symbole;
 
-    while (table_symboles[i].niveau == niveau_courant) {
-        free(table_symboles[i].nom);
-        table_symboles[i].type = TYPE_VOID;
-        table_symboles[i].is_init = VAR_NON_INIT;
-        table_symboles[i].is_const = VAR_NON_CONST;
-        table_symboles[i].niveau = 0;
-        i --;
-        pos_symbole --;
+    for (i = 0; i < pos_symbole; i++) {
+        if (table_symboles[i].is_global == 0) {
+            free(table_symboles[i].nom);
+            table_symboles[i].type = TYPE_VOID;
+            table_symboles[i].is_init = VAR_NON_INIT;
+            table_symboles[i].is_const = VAR_NON_CONST;
+            pos_symbole_tmp --;
+        }
     }
-}*/
+    pos_symbole = pos_symbole_tmp;
+}
 
 
 /*
@@ -126,7 +131,7 @@ int ts_create_tmp()
     table_symboles[pos_symbole].type = TYPE_INT;
     table_symboles[pos_symbole].is_init = VAR_INIT;
     table_symboles[pos_symbole].is_const = VAR_NON_CONST;
-    table_symboles[pos_symbole].is_global = 0;
+    table_symboles[pos_symbole].is_global = vars_globales;
     pos_symbole++;
     return pos_symbole - 1;
 }
@@ -139,6 +144,7 @@ void ts_delete_tmp()
     pos_symbole --;
     free(table_symboles[pos_symbole].nom);
     table_symboles[pos_symbole].is_init = VAR_NON_INIT;
+    table_symboles[pos_symbole].is_global = 0;
 }
 
 
@@ -151,7 +157,7 @@ int ts_create_from_param(struct t_param param)
     table_symboles[pos_symbole].type = param.type;
     table_symboles[pos_symbole].is_init = VAR_INIT;
     table_symboles[pos_symbole].is_const = param.is_const;
-    table_symboles[pos_symbole].is_global = 0;
+    table_symboles[pos_symbole].is_global = 1;
     pos_symbole++;
 
     return pos_symbole - 1;

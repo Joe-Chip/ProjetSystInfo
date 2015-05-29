@@ -83,6 +83,12 @@ int tf_check_param(char * nom, int type, struct t_param param);
 
 
 /*
+ * Retourne le nombr de parametres de la fonction
+ */
+int tf_get_nb_params(int fonction);
+
+
+/*
  * Recupere le prochain parametre a copier dans la table des symboles
  */
 struct t_param tf_get_next_param(int fonction);
