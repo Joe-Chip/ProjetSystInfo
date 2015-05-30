@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="/home/salaun/4IR/ProjetSystInfo/processeur/chemin_donnees_test_isim_beh.wdb" id="1" type="auto">
+         <top_modules>
+            <top_module name="chemin_donnees_test" />
+            <top_module name="std_logic_1164" />
+            <top_module name="std_logic_arith" />
+            <top_module name="std_logic_unsigned" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <WVObjectSize size="44" />
+   <wvobject fp_name="/chemin_donnees_test/clk" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/rst" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">rst</obj_property>
+      <obj_property name="ObjectShortName">rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/cpt_instructions/sens" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">sens</obj_property>
+      <obj_property name="ObjectShortName">sens</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/cpt_instructions/load" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">load</obj_property>
+      <obj_property name="ObjectShortName">load</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/cpt_instructions/en" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">en</obj_property>
+      <obj_property name="ObjectShortName">en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/cpt_instructions/compteur" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">compteur[7:0]</obj_property>
+      <obj_property name="ObjectShortName">compteur[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/mem_ins/dout" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">dout[31:0]</obj_property>
+      <obj_property name="ObjectShortName">dout[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_LI_DI/out_cop" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">out_cop[7:0]</obj_property>
+      <obj_property name="ObjectShortName">out_cop[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_LI_DI/out_a" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">out_a[7:0]</obj_property>
+      <obj_property name="ObjectShortName">out_a[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_LI_DI/out_b" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">out_b[7:0]</obj_property>
+      <obj_property name="ObjectShortName">out_b[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_LI_DI/out_c" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">out_c[7:0]</obj_property>
+      <obj_property name="ObjectShortName">out_c[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/regs/adr_a" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">adr_a[3:0]</obj_property>
+      <obj_property name="ObjectShortName">adr_a[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/regs/adr_b" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">adr_b[3:0]</obj_property>
+      <obj_property name="ObjectShortName">adr_b[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/regs/adr_w" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">adr_w[3:0]</obj_property>
+      <obj_property name="ObjectShortName">adr_w[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/regs/w" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">w</obj_property>
+      <obj_property name="ObjectShortName">w</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/regs/data" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">data[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/regs/qa" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">qa[7:0]</obj_property>
+      <obj_property name="ObjectShortName">qa[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/regs/qb" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">qb[7:0]</obj_property>
+      <obj_property name="ObjectShortName">qb[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/regs/registres" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">registres[0:15]</obj_property>
+      <obj_property name="ObjectShortName">registres[0:15]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_DI_EX/in_b" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">in_b[7:0]</obj_property>
+      <obj_property name="ObjectShortName">in_b[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_DI_EX/in_c" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">in_c[7:0]</obj_property>
+      <obj_property name="ObjectShortName">in_c[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_DI_EX/out_cop" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">out_cop[7:0]</obj_property>
+      <obj_property name="ObjectShortName">out_cop[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_DI_EX/out_a" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">out_a[7:0]</obj_property>
+      <obj_property name="ObjectShortName">out_a[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_DI_EX/out_b" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">out_b[7:0]</obj_property>
+      <obj_property name="ObjectShortName">out_b[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_DI_EX/out_c" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">out_c[7:0]</obj_property>
+      <obj_property name="ObjectShortName">out_c[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/lual/a" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">a[7:0]</obj_property>
+      <obj_property name="ObjectShortName">a[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/lual/b" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">b[7:0]</obj_property>
+      <obj_property name="ObjectShortName">b[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/lual/ctrl_ual" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">ctrl_ual[2:0]</obj_property>
+      <obj_property name="ObjectShortName">ctrl_ual[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/lual/n" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">n</obj_property>
+      <obj_property name="ObjectShortName">n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/lual/z" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">z</obj_property>
+      <obj_property name="ObjectShortName">z</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/lual/o" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">o</obj_property>
+      <obj_property name="ObjectShortName">o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/lual/c" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">c</obj_property>
+      <obj_property name="ObjectShortName">c</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/lual/s" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">s[7:0]</obj_property>
+      <obj_property name="ObjectShortName">s[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_EX_MEM/out_cop" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">out_cop[7:0]</obj_property>
+      <obj_property name="ObjectShortName">out_cop[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_EX_MEM/out_a" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">out_a[7:0]</obj_property>
+      <obj_property name="ObjectShortName">out_a[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_EX_MEM/out_b" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">out_b[7:0]</obj_property>
+      <obj_property name="ObjectShortName">out_b[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/mem_donnees/adr" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">adr[7:0]</obj_property>
+      <obj_property name="ObjectShortName">adr[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/mem_donnees/din" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">din[7:0]</obj_property>
+      <obj_property name="ObjectShortName">din[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/mem_donnees/rw" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">rw</obj_property>
+      <obj_property name="ObjectShortName">rw</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/mem_donnees/dout" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">dout[7:0]</obj_property>
+      <obj_property name="ObjectShortName">dout[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/mem_donnees/donnees" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">donnees[0:255]</obj_property>
+      <obj_property name="ObjectShortName">donnees[0:255]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_MEM_ER/out_cop" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">out_cop[7:0]</obj_property>
+      <obj_property name="ObjectShortName">out_cop[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_MEM_ER/out_a" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">out_a[7:0]</obj_property>
+      <obj_property name="ObjectShortName">out_a[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/chemin_donnees_test/uut/etage_MEM_ER/out_b" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">out_b[7:0]</obj_property>
+      <obj_property name="ObjectShortName">out_b[7:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+</wave_config>
