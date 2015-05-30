@@ -221,7 +221,7 @@ void add_saut(int destination)
 // Parcourt le fichier de sortie pour completer les sauts
 void completer_sauts ()
 {
-    int jump_traites = 0;
+    int jump_traites = 1;
     int lignes_traitees = 0;
     int char_cops, taille_a_copier, adr_fonct;
     char * ligne, * adr_jump, *appel_fonct, *nom_fonct;

@@ -4,7 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define TAILLE_TABLE_VARS 256
+// Le dernier élément sert de base pointer
+#define TAILLE_TABLE_VARS 257
+#define BASE_POINTER 256
+// Pas utile d'avoir plus pour ce projet
 #define NB_LIGNES_CODE_MAX 1000
 
 // Definition ds constantes lies aux operateurs
@@ -29,7 +32,6 @@
 
 // Declaration de la table utilisee pour stocker les variables
 int table_variables[TAILLE_TABLE_VARS];
-
 
 /******************************************************************************
 ******************* Définition de la table contentant le code *****************

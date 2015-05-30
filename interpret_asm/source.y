@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include "interpret.h"
 
+extern FILE * yyin;
+extern int yylineno;
 %}
 
 
@@ -12,8 +14,10 @@
 %token tAND tOR
 %token tEQU tSUP tINF
 %token tCALL tRET
-%token <nb> tOPERAND
+%token tNEG tBP
+%token <nb> tOPERAND 
 %token tNEWLINE
+%type <nb> Operande
 %start Start
 
 
@@ -21,8 +25,8 @@
 
 Start           : Instructions
                 ;
-Instructions    : Instruction Instructions
-                | Instruction
+Instructions    : Instruction {yylineno++;} Instructions
+                | Instruction {yylineno++;}
                 ;
 Instruction     : Addition
                 | Soustraction
@@ -40,65 +44,84 @@ Instruction     : Addition
                 | Call
                 | Return
                 ;
-Addition        : tADD tOPERAND tOPERAND tOPERAND tNEWLINE
+Operande        : tOPERAND
+                    {$$ = $1;}
+                | {printf("OP neg\n");} tNEG tOPERAND
+                    {$$ = -$3;}
+                | tBP
+                    {$$ = BASE_POINTER;}
+                ;
+Addition        : tADD Operande Operande Operande tNEWLINE
                     {add_ligne(ADD, $2, $3, $4);}
                 ;
-Soustraction    : tSOU tOPERAND tOPERAND tOPERAND tNEWLINE
+Soustraction    : tSOU Operande Operande Operande tNEWLINE
                     {add_ligne(SOU, $2, $3, $4);}
                 ;
-Multiplication  : tMUL tOPERAND tOPERAND tOPERAND tNEWLINE
+Multiplication  : tMUL Operande Operande Operande tNEWLINE
                     {add_ligne(MUL, $2, $3, $4);}
                 ;
-Division        : tDIV tOPERAND tOPERAND tOPERAND tNEWLINE
+Division        : tDIV Operande Operande Operande tNEWLINE
                     {add_ligne(DIV, $2, $3, $4);}
                 ;
-Affectation     : tAFC tOPERAND tOPERAND tNEWLINE
+Affectation     : tAFC Operande Operande tNEWLINE
                     {add_ligne(AFC, $2, $3, NO_OPERANDE);}
                 ;
-Copie           : tCOP tOPERAND tOPERAND tNEWLINE
+Copie           : tCOP Operande Operande tNEWLINE
                     {add_ligne(COP, $2, $3, NO_OPERANDE);}
                 ;
-Saut            : tJMP tOPERAND tNEWLINE
+Saut            : tJMP Operande tNEWLINE
                     {add_ligne(JMP, $2, NO_OPERANDE, NO_OPERANDE);}
                 ;
-Saut_Si_Faux    : tJMF tOPERAND tOPERAND tNEWLINE
+Saut_Si_Faux    : tJMF Operande Operande tNEWLINE
                     {add_ligne(JMF, $2, $3, NO_OPERANDE);}
                 ;
-Et              : tAND tOPERAND tOPERAND tOPERAND tNEWLINE
+Et              : tAND Operande Operande Operande tNEWLINE
                     {add_ligne(AND, $2, $3, $4);}
                 ;
-Ou              : tOR tOPERAND tOPERAND tOPERAND tNEWLINE
+Ou              : tOR Operande Operande Operande tNEWLINE
                     {add_ligne(OR, $2, $3, $4);}
                 ;
-Egal            : tEQU tOPERAND tOPERAND tOPERAND tNEWLINE
+Egal            : tEQU Operande Operande Operande tNEWLINE
                     {add_ligne(EQU, $2, $3, $4);}
                 ;
-Inferieur       : tINF tOPERAND tOPERAND tOPERAND tNEWLINE
+Inferieur       : tINF Operande Operande Operande tNEWLINE
                     {add_ligne(INF, $2, $3, $4);}
                 ;
-Superieur       : tSUP tOPERAND tOPERAND tOPERAND tNEWLINE
+Superieur       : tSUP Operande Operande Operande tNEWLINE
                     {add_ligne(SUP, $2, $3, $4);}
                 ;
-Call            : tCALL tOPERAND
+Call            : tCALL Operande tNEWLINE
                     {add_ligne(CALL, $2, NO_OPERANDE, NO_OPERANDE);}
                 ;
-Return          : tRET
+Return          : tRET tNEWLINE
                     {add_ligne(RET, NO_OPERANDE, NO_OPERANDE, NO_OPERANDE);}
                 ;
 
 %%
 
-int main ()
+int main (int argc, char * argv[])
 {
-    if (yyparse() == 0) {
+    int result;
+
+    if (argc == 2) {
+        yyin = fopen(argv[1], "r");
+        if (yyin == NULL) {
+            printf("Fichier d'entrée non existant\n");
+            result = 2;
+        }
+    }
+
+    result = yyparse();
+
+    if (result == 0) {
         execute();
     }
 
-    return 0;
+    return result;
 }
 
 
 yyerror(char * s)
 {
-    fprintf(stderr, "%s\n", s);
+    fprintf(stderr, "Ligne %d : %s\n", yylineno, s);
 }

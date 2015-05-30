@@ -29,7 +29,7 @@ int yydebug=1;
 
 Start           :   {// Si cette valeur n'a pas change a la fin -> pas de main
                      table_sauts[0] = 0;}
-                 Vars_Globales
+                  Vars_Globales
                 ;
 Vars_Globales   : L_Decl Vars_Globales
                 | Prototypes

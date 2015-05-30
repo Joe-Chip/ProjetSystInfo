@@ -21,10 +21,12 @@ SUP         {return tSUP;}
 EQU         {return tEQU;}
 CALL        {return tCALL;}
 RET         {return tRET;}
+BP          {return tBP;}
 [0-9]+      {
                 yylval.nb = atoi(yytext);
                 return tOPERAND;
             }
+"-"         {return tNEG;}
 \n          {return tNEWLINE;}
 .           {}
 

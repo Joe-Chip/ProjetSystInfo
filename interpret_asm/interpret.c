@@ -4,7 +4,6 @@
 // Numero de la ligne courante
 int ligne = 0;
 
-
 /******************************************************************************
 ******************* Fonctons de la table contentant le code *******************
 ******************************************************************************/
@@ -25,14 +24,15 @@ void aff_vars()
 {
     int i;
 
-    printf("===================== Table variables ====================");
+    printf("===================== Table variables ====================\n");
     for (i = 0; i < TAILLE_TABLE_VARS; i++) {
         printf("%d ", table_variables[i]);
         if (i % 10 == 0) {
             printf("\n");
         }
     }
-    printf("==========================================================");
+    printf("\n==========================================================\n");
+    sleep(1);
 }
 
 
@@ -119,6 +119,9 @@ void execute()
             }
             break;
         }
+        printf("Ligne %d\n", ligne);
+        aff_vars();
+        ligne ++;
     }
 }
 
