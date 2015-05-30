@@ -42,7 +42,13 @@ Globales        : Inst_Globales
                      // Verification que le main a bien ete rencontre
                      if (table_sauts[0] == 0) {
                         yyerror("Pas de main");
-                     }}
+                     }
+                     // Rétablissement du base pointer
+                     base_pointer = 0;
+                     fprintf(output_tmp, "COP BP %d\n", ts_get_addr(nom_bp));
+                     // Affichage de la valeur de retour du main
+                     fprintf(output_tmp, "PRI 0\n");
+                     compteur_asm += 2;}
                 ;
 Inst_Globales   : Inst_Globale Inst_Globales
                 | Inst_Globale
@@ -51,17 +57,28 @@ Inst_Globale    : Decl_Fonct
                 | Main
                 ;
 Main            : Type_Const tMAIN tPO tPF
-                    {// Les variables ne sont plus globales
-                     vars_globales = 0;
-                     base_pointer = pos_symbole;
-                     // Vérification du type du main
+                    {// Vérification du type du main
                      if (type_courant != TYPE_INT) {
                         yyerror("Type main incorrect");
                      }
+                     // Les variables ne sont plus globales
+                     vars_globales = 0;
+
+                     // Mise en place de la table des symboles
+                     // Variable pour le résultat
+                     ts_create(nom_res, TYPE_INT, VAR_INIT, VAR_NON_CONST);
+                     // Variable pour l'adresse de retour
+                     ts_create(nom_adr_ret, TYPE_INT, VAR_INIT, VAR_CONST);
+                     // Sauvegarde du base pointer
+                     ts_create(nom_bp, TYPE_INT, VAR_INIT, VAR_CONST);
+                     // Nouvelle valeur du base pointer
+                     base_pointer = pos_symbole;
+
+                     // Prise en compte de la mise en place du main,
+                     // qui est insérée à posteriori
+                     compteur_asm += 4;
                      // Initialisation du saut vers le main
-                     table_sauts[0] = compteur_asm + 1;
-                     // Comptage du nombre d'instructions avant le saut
-                     compteur_vars_glo = ts_compter_variables_globales();}
+                     table_sauts[0] = compteur_asm + 1;}
                   Corps
                     {ts_vider_dernier_niveau();
                      base_pointer = 0;}
@@ -102,6 +119,10 @@ Decl            : tID tEGAL
                     {fprintf(output_tmp, "COP %d %d\n",
                              ts_get_addr($1), $4);
                      compteur_asm ++;
+
+                     if (vars_globales) {
+                        compteur_inst_vars_glo ++;
+                     }
                      ts_delete_tmp();}
                 | tID
                     {switch (type_courant) {
@@ -118,11 +139,17 @@ Decl            : tID tEGAL
 Expression      : Facteur tADD Expression    
                     {fprintf(output_tmp, "ADD %d %d %d\n", $1, $1, $3);
                      compteur_asm ++;
+                     if (vars_globales) {
+                        compteur_inst_vars_glo ++;
+                     }
                      ts_delete_tmp();
                      $$ = $1;}
                 | Facteur tSUB Expression
                     {fprintf(output_tmp, "SOU %d %d %d\n", $1, $1, $3);
                      compteur_asm ++;
+                     if (vars_globales) {
+                        compteur_inst_vars_glo ++;
+                     }
                      ts_delete_tmp();
                      $$ = $1;}
                 | Facteur {$$ = $1;}
@@ -130,11 +157,17 @@ Expression      : Facteur tADD Expression
 Facteur         : Terme tMUL Facteur
                     {fprintf(output_tmp, "MUL %d %d %d\n", $1, $1, $3);
                      compteur_asm ++;
+                     if (vars_globales) {
+                        compteur_inst_vars_glo ++;
+                     }
                      ts_delete_tmp();
                      $$ = $1;}
                 | Terme tDIV Facteur
                     {fprintf(output_tmp, "DIV %d %d %d\n", $1, $1, $3);
                      compteur_asm ++;
+                     if (vars_globales) {
+                        compteur_inst_vars_glo ++;
+                     }
                      ts_delete_tmp();
                      $$ = $1;}
                 | Terme   {$$ = $1;}
@@ -143,15 +176,35 @@ Terme           : tPO Expression tPF
                 | tSUB Expression
                     {$$ = $2;}
                 | tID
-                    {int addr = ts_get_addr($1);
-                     int tmp = ts_create_tmp();
-                     fprintf(output_tmp, "COP %d %d\n", tmp, addr);
-                     compteur_asm ++;
-                     $$ = tmp;}
+                    {// Verification de l'existance de la variable
+                     int addr = ts_get_addr($1);
+                     if (addr != (-1 - base_pointer)) {
+                        // Verification que la variable est initialisee
+                         if (ts_is_init($1) == VAR_INIT) {
+                            display_table_symb();
+                            int tmp = ts_create_tmp();
+                            fprintf(output_tmp, "COP %d %d\n", tmp, addr);
+                            compteur_asm ++;
+                            if (vars_globales) {
+                                compteur_inst_vars_glo ++;
+                            }
+                            $$ = tmp;
+                         } else {
+                            yyerror("Variable non initialisée");
+                            $$ = 0;
+                        }
+                     } else {
+                        yyerror("Variable inexistente");
+                        $$ = 0;
+                        
+                     }}
                 | tNB
                     {int tmp = ts_create_tmp();
                      fprintf(output_tmp, "AFC %d %d\n", tmp, $1);
                      compteur_asm ++;
+                     if (vars_globales) {
+                        compteur_inst_vars_glo ++;
+                     }
                      $$ = tmp;}
                 | Appel_Fonct
                     {$$ = $1;}
@@ -164,7 +217,7 @@ Instruction     : Affectation
                 | If
                 | While
                 | Return
-                | Appel_Fonct
+                | Appel_Fonct tPV
                     {// Nettoyage apres appel de fonction
                      ts_delete_tmp();
                      ts_delete_tmp();
@@ -275,8 +328,8 @@ Operande        : Expression tEQUI Expression
                     {$$ = $2;}
                 ;
 Return          : tRETURN Expression tPV
-                    {fprintf(output_tmp, "COP %d %d\n", -2, $2);
-                     fprintf(output_tmp, "RET\n");
+                    {fprintf(output_tmp, "COP %d %d\n", ts_get_addr(nom_res), $2);
+                     fprintf(output_tmp, "RET %d\n", ts_get_addr(nom_adr_ret));
                      compteur_asm += 2;
                      ts_delete_tmp();
                      // Flag retour
@@ -331,31 +384,65 @@ Decl_Fonct      : Prototype
                         adr_param = ts_create_from_param(
                                         tf_get_next_param(fonct_courante));
                      }
+
+                     // Mise en place de la table des symboles
+                     // Variable pour le résultat
+                     ts_create(nom_res,
+                               table_fonctions[fonct_courante].type_retour,
+                               VAR_INIT, VAR_NON_CONST);
+                     // Variable pour l'adresse de retour
+                     ts_create(nom_adr_ret, TYPE_INT, VAR_INIT, VAR_CONST);
+                     // Sauvegarde du base pointer
+                     ts_create(nom_bp, TYPE_INT, VAR_INIT, VAR_CONST);
+                     
                      base_pointer = pos_symbole;}
                   Corps
                     {if (!flag_return) {
                         // Si la derniere instruction n'est pas un return
-                        fprintf(output_tmp, "RET\n");
+                        fprintf(output_tmp, "RET %d\n", ts_get_addr(nom_adr_ret));
                      }
                      ts_vider_dernier_niveau();
                      base_pointer = 0;}
                 ;
 Appel_Fonct     : tID
                     {fonct_courante = tf_get_position($1);}
-                  Params_Appel_Pt tPV
-                    {// Variable temporaire pour le résultat
-                     int addr_result = ts_create_tmp();
-                     // Variable temporaire pour l'adresse de retour
-                     int addr_retour = ts_create_tmp();
+                  Params_Appel_Pt
+                    {// Variable pour le résultat
+                     int addr_result = ts_create(nom_res,
+                                                 table_fonctions[fonct_courante].type_retour,
+                                                 VAR_INIT, VAR_NON_CONST);
+                     // Variable pour l'adresse de retour
+                     int addr_retour = ts_create(nom_adr_ret, TYPE_INT,
+                                                 VAR_INIT, VAR_CONST);
                      fprintf(output_tmp, "COP %d %d\n",
                              addr_retour, compteur_asm + 4);
                      // Sauvegarde du base pointer
-                     ts_create(nom_bp, TYPE_INT, VAR_INIT, VAR_CONST);
-                     fprintf(output_tmp, "COP BP %d\n", base_pointer);
+                     int addr_bp = ts_create(nom_bp, TYPE_INT, VAR_INIT, VAR_CONST);
+                     fprintf(output_tmp, "COP %d BP\n", addr_bp);
                      // Appel de la fonction
                      fprintf(output_tmp, "CALL %s\n", $1);
-                     compteur_asm += 3;
-                     $$ = addr_result;
+
+                     // Récupération du base pointer
+                     fprintf(output_tmp, "COP BP %d\n", addr_bp);
+                     compteur_asm += 4;
+
+                     // Nettoyage de la table des symboles
+                     //     Base pointer, adr retour, resultat
+                     ts_delete_tmp();
+                     ts_delete_tmp();
+                     ts_delete_tmp();
+                     //     Parametres
+                     int i;
+                     for (i = 0; i < tf_get_nb_params(fonct_courante); i++) {
+                        ts_delete_tmp();
+                     }
+
+                     // Recuperation du resultat
+                     int res = ts_create_tmp();
+                     fprintf(output_tmp, "COP %d %d\n", res, addr_result);
+                     compteur_asm ++;
+                     $$ = res;
+
                      // Flag retour
                      flag_return = 0;}
                 ;
@@ -368,10 +455,12 @@ Params_Appel    : Param_Appel tVIRGULE Params_Appel
 Param_Appel     : Create_Symb Expression
                     {fprintf(output_tmp, "COP %d %d\n", $1, $2);
                      compteur_asm ++;
-                     ts_delete_tmp();}
+                     ts_delete_tmp();
+                     fonct_courante = old_fonct_courante;}
                 ;
 Create_Symb     :   {$$ = ts_create_from_param(
-                                    tf_get_next_param(fonct_courante));}
+                                    tf_get_next_param(fonct_courante));
+                     old_fonct_courante = fonct_courante;}
                 ;
                
 
@@ -415,6 +504,7 @@ int main (int argc, char * argv[])
     // Execution de la compilation ssi les entrees sont correctes
     if (result == 0) {
         result = yyparse();
+        printf("Completion des sauts\n");
         completer_sauts();
     }
 

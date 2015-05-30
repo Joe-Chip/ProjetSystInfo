@@ -6,6 +6,10 @@ int pos_fonction = 0;
 // Indice de la fonction traitée, utilise lors d'un appel
 int fonct_courante = 0;
 
+// Indice de la fonction traitée, utilise en cas d'appel d'une autre
+// fonction lors du traitement des parametres
+int old_fonct_courante = 0;
+
 // Indice du parametre en traitment
 int params_traites;
 

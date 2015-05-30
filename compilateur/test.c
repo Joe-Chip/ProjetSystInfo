@@ -1,4 +1,6 @@
-int globolol = 0;
+int global_non_init;
+int global_init = 9;
+int glabal_init_par_exp = 5 * 8;
 
 void toto (int lulz);
 
@@ -26,6 +28,6 @@ void toto (int lulz)
 {
     int lalz;
 
-    lalz = lulz;
+    lalz = lulz + global_init;
 }
 

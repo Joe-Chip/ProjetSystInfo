@@ -7,14 +7,23 @@ FILE * output = NULL;
 // Indique la première case vide dans la table des symboles
 int pos_symbole = 0;
 
-// Compte le nombre de variabes globales, pour savoir ou inserer le saut au main
+// Compte le nombre de variabes globales
 int compteur_vars_glo = 0;
+
+// Compte le nombre d'instructions pour les variabes globales
+int compteur_inst_vars_glo;
 
 // Stocke le pointeur indiquant le début des variables locales
 int base_pointer = 0;
 
 // Nom du base pointer utilisé par la table des symboles
-char nom_bp[25] =  "ceci_est_le_base_pointer";
+char nom_res[26] = "ceci_est_la_valeur_retour";
+
+// Nom du base pointer utilisé par la table des symboles
+char nom_adr_ret[26] = "ceci_est_l'adresse_retour";
+
+// Nom du base pointer utilisé par la table des symboles
+char nom_bp[25] = "ceci_est_le_base_pointer";
 
 // Stocke le type des variables à créer (par defaut : int non constant)
 int type_courant = TYPE_INT;
@@ -23,8 +32,7 @@ int type_courant = TYPE_INT;
 int vars_globales = 1;
 
 // Compteur du nombre de lignes ecrites en assembleur
-// Demarre a un pour prendre en compte le saut vers le main
-int compteur_asm = 1;
+int compteur_asm = 0;
 
 // Indique la position actuelle dans la table des sauts
 // On commence à 1, le premier saut du programme va obligatoirement au main
@@ -40,14 +48,25 @@ int pos_tab_saut = 1;
 /*
  * Crée une variable a sommet de la table des symboles
  */
-void ts_create(char * nom, int type, int is_init, int is_const)
+int ts_create(char * nom, int type, int is_init, int is_const)
 {
-    table_symboles[pos_symbole].nom = strdup(nom);
-    table_symboles[pos_symbole].type = type;
-    table_symboles[pos_symbole].is_init = is_init;
-    table_symboles[pos_symbole].is_const = is_const;
-    table_symboles[pos_symbole].is_global = vars_globales;
-    pos_symbole++;
+    int adr_var;
+
+    if (vars_globales) {
+        compteur_vars_glo ++;
+        adr_var = TAILLE_TAB_SYMB - compteur_vars_glo;
+    } else {
+        adr_var = pos_symbole;
+        pos_symbole++;
+    }
+
+    table_symboles[adr_var].nom = strdup(nom);
+    table_symboles[adr_var].type = type;
+    table_symboles[adr_var].is_init = is_init;
+    table_symboles[adr_var].is_const = is_const;
+    table_symboles[adr_var].is_global = vars_globales;
+
+    return adr_var - base_pointer;
 }
 
 /*
@@ -65,25 +84,22 @@ void ts_init(char * nom)
  */
 int ts_get_addr(char * nom)
 {
-    int i = 0;
-    int addr = -1;
+    int i;
+    int addr = -1 - base_pointer;
 
     // Parcours des variales locales
-    while (i < pos_symbole && addr == -1) {
-        if (strcmp(table_symboles[i + base_pointer].nom, nom) == 0) {
-            addr = i;
+    for (i = 0; i < pos_symbole; i++) {
+        if (strcmp(table_symboles[i].nom, nom) == 0) {
+            addr = i - base_pointer;
         }
-        i++;
     }
     // Si la variabe n'est pas locale
-    if (addr == -1) {
-        i = 0;
-        // Parcours ds variables globales
-        while (table_symboles[i].is_global) {
+    if (addr == -1 - base_pointer) {
+        // Parcours des variables globales
+        for (i = TAILLE_TAB_SYMB - compteur_vars_glo; i < TAILLE_TAB_SYMB; i++) {
             if (strcmp(table_symboles[i].nom, nom) == 0) {
-                addr = i - base_pointer;
+                addr = i;
             }
-            i++;
         }
     }
     return addr;
@@ -97,6 +113,15 @@ int ts_is_const(char * nom)
 {
     return table_symboles[ts_get_addr(nom)].is_const;
 }
+
+/*
+ * Retourne VAR_INIT si la variable est constante, VAR_NON_INIT sinon
+ */
+int ts_is_init(char * nom)
+{
+    printf("%s : %d\n", nom, table_symboles[ts_get_addr(nom)].is_init);
+    return table_symboles[ts_get_addr(nom)].is_init;
+} 
 
 
 /*
@@ -126,14 +151,15 @@ void ts_vider_dernier_niveau()
  */
 int ts_create_tmp()
 {
-    table_symboles[pos_symbole].nom = malloc(2);
-    strcpy(table_symboles[pos_symbole].nom, " ");
-    table_symboles[pos_symbole].type = TYPE_INT;
-    table_symboles[pos_symbole].is_init = VAR_INIT;
-    table_symboles[pos_symbole].is_const = VAR_NON_CONST;
-    table_symboles[pos_symbole].is_global = vars_globales;
-    pos_symbole++;
-    return pos_symbole - 1;
+    int adr_var, flag_glo;
+    char * nom;
+    nom = malloc(2);
+    strcpy(nom, " ");
+    flag_glo = vars_globales;
+    vars_globales = 0;
+    adr_var = ts_create(nom, TYPE_INT, VAR_INIT, VAR_NON_CONST);
+    vars_globales = flag_glo;
+    return adr_var;
 }
 
 /*
@@ -157,7 +183,7 @@ int ts_create_from_param(struct t_param param)
     table_symboles[pos_symbole].type = param.type;
     table_symboles[pos_symbole].is_init = VAR_INIT;
     table_symboles[pos_symbole].is_const = param.is_const;
-    table_symboles[pos_symbole].is_global = 1;
+    table_symboles[pos_symbole].is_global = 0;
     pos_symbole++;
 
     return pos_symbole - 1;
@@ -167,20 +193,18 @@ int ts_create_from_param(struct t_param param)
 /*
  * Compte le nombre d'instructions nécessaires pour les variables globales
  */
-int ts_compter_variables_globales()
+int ts_compter_inst_variables_globales()
 {
     int i;
     int compte = 0;
 
-    for (i = 0; i < pos_symbole; i++) {
-        if (table_symboles[i].is_global == 1) {
-            if (table_symboles[i].is_init == 1) {
-                // Il faut 2 instructions pour creer et initialiser 
-                compte += 2;
-            } else {
-                // Une seule pour juste creer
-                compte ++;
-            }
+    for (i = TAILLE_TAB_SYMB - compteur_vars_glo; i < TAILLE_TAB_SYMB; i++) {
+        if (table_symboles[i].is_init == 1) {
+            // Il faut 2 instructions pour creer et initialiser, 0 pour  
+            compte += 2;
+        } else {
+            // Une seule pour juste creer
+            compte ++;
         }
     }
 
@@ -198,9 +222,15 @@ void display_table_symb()
     printf("\n==================TABLE DES SYMBOLES==================\n");
     for (i = 0; i < pos_symbole; i++) {
         printf("Var %d : %s, Type : %d, INIT : %d, CONST : %d, Globale : %d\n",
-               i, table_symboles[i].nom, table_symboles[i].type,
+               i - base_pointer, table_symboles[i].nom, table_symboles[i].type,
                table_symboles[i].is_init, table_symboles[i].is_const,
                table_symboles[i].is_global); 
+    }
+    for (i = TAILLE_TAB_SYMB - compteur_vars_glo; i < TAILLE_TAB_SYMB; i++) {
+        printf("Var %d : %s, Type : %d, INIT : %d, CONST : %d, Globale : %d\n",
+               i, table_symboles[i].nom, table_symboles[i].type,
+               table_symboles[i].is_init, table_symboles[i].is_const,
+               table_symboles[i].is_global);
     }
     printf("======================================================\n\n");
 }
@@ -226,7 +256,6 @@ void completer_sauts ()
     int char_cops, taille_a_copier, adr_fonct;
     char * ligne, * adr_jump, *appel_fonct, *nom_fonct;
     char adr_jmp[] = "adr_jmp";
-//    char adr_fct[] = "adr_fct";
     char call[] = "CALL";
 
     nom_fonct = malloc(TAILLE_LIGNE * sizeof(char));
@@ -240,9 +269,17 @@ void completer_sauts ()
     
     // Recopie dans le ficher de sortie
     while (ligne != NULL) {
-        if (lignes_traitees == compteur_vars_glo) {
-            fprintf(output, "JMP %d\n", table_sauts[0]);
-            lignes_traitees ++;
+        // Inserstion de l'appel au main
+        if (lignes_traitees == compteur_inst_vars_glo) {
+            // Adresse de la fin du code
+            fprintf(output, "COP 1 %d\n", compteur_asm);
+            // Sauvegarde du base pointer
+            fprintf(output, "COP 2 BP\n");
+            // Nouvelle valeur du base pointer
+            fprintf(output, "COP BP 4\n");
+            // Appel du main
+            fprintf(output, "CALL %d\n", table_sauts[0]);
+            lignes_traitees += 4;
         }
 
         adr_jump = strstr(ligne, adr_jmp);

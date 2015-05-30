@@ -36,11 +36,20 @@ extern FILE * output;
 // Indique la première case vide dans la table des symboles
 extern int pos_symbole;
 
-// Compte le nombre de variabes globales, pour savoir ou inserer le saut au main
+// Compte le nombre de variabes globales
 extern int compteur_vars_glo;
+
+// Compte le nombre d'instructions pour les variabes globales
+extern int compteur_inst_vars_glo;
 
 // Stocke le pointeur indiquant le début des variable locales
 extern int base_pointer;
+
+// Nom du base pointer utilisé par la table des symboles
+extern char nom_res[26];
+ 
+// Nom du base pointer utilisé par la table des symboles
+extern char nom_adr_ret[26];
 
 // Nom du base pointer utilisé par la table des symboles
 extern char nom_bp[25];
@@ -73,7 +82,7 @@ extern int pos_tab_saut;
 /*
  * Crée une variable au sommet de la table des symboles
  */
-void ts_create(char * nom, int type, int is_init, int is_const);
+int ts_create(char * nom, int type, int is_init, int is_const);
 
 /*
  * La variable dont le nom est passé en argument se voit initialisée :
@@ -91,6 +100,11 @@ int ts_get_addr(char * nom);
  * Retourne VAR_CONST si la variable est constante, VAR_NON_CONST sinon
  */
 int ts_is_const(char * nom);
+
+/*
+ * Retourne VAR_INIT si la variable est constante, VAR_NON_INIT sinon
+ */
+int ts_is_init(char * nom);
 
 /*
  * Retire toutes les variables du niveau courant de la table des symboles
@@ -116,7 +130,7 @@ int ts_create_from_param(struct t_param param);
 /*
  * Compte le nombre d'instructions nécesaires pour les variables globales
  */
-int ts_compter_variables_globales();
+int ts_compter_inst_variables_globales();
 
 /*
  * Affiche la table des symboles. Utilisee pour le debug

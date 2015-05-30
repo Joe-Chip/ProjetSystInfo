@@ -21,6 +21,10 @@ extern int pos_fonction;
 // Indice de la fonction traitée, utilise lors d'un appel
 extern int fonct_courante;
 
+// Indice de la fonction traitée, utilise en cas d'appel d'une autre
+// fonction lors du traitement des parametres
+extern int old_fonct_courante;
+
 // Indice du parametre en traitment
 extern int params_traites;
 
