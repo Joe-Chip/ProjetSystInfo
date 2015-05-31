@@ -54,7 +54,7 @@ constant ADD : STD_LOGIC_VECTOR (7 downto 0) := x"01";
 constant SOU : STD_LOGIC_VECTOR (7 downto 0) := x"03";
 constant COP : STD_LOGIC_VECTOR (7 downto 0) := x"05";
 constant AFC : STD_LOGIC_VECTOR (7 downto 0) := x"06";
--- constant OP_LOAD : STD_LOGIC_VECTOR (7 downto 0) := x"07";
+constant OP_LOAD : STD_LOGIC_VECTOR (7 downto 0) := x"07";
 constant STORE : STD_LOGIC_VECTOR (7 downto 0) := x"08";
 constant JMP : STD_LOGIC_VECTOR (7 downto 0) := x"09";
 
@@ -63,7 +63,8 @@ signal flag_attente : STD_LOGIC := '0';
 begin
 
 	flag_attente <= '1' when ((COP_DI = AFC or COP_DI = COP or 		-- Etage DI
-									   COP_DI = ADD or COP_DI = SOU)
+									   COP_DI = ADD or COP_DI = SOU or
+                                       COP_DI = LOAD)
 									  and
 									  (((COP_LI = COP or COP_LI = ADD or	--		Conflit opérande B
 										  COP_LI = SOU or COP_LI = STORE)
@@ -73,7 +74,8 @@ begin
 									    and A_DI = B_LI)))
 									 or
 									 ((COP_EX = AFC or COP_EX = COP or 		-- Etage EX
-									   COP_EX = ADD or COP_EX = SOU)
+									   COP_EX = ADD or COP_EX = SOU or
+                                       COP_EX = LOAD)
 									  and
 									  (((COP_LI = COP or COP_LI = ADD or	--		Conflit opérande B
 										  COP_LI = SOU or COP_LI = STORE)
@@ -83,7 +85,8 @@ begin
 									    and A_EX = C_LI)))
 									 or
 									 ((COP_MEM = AFC or COP_MEM = COP or 	-- Etage MEM
-									   COP_MEM = ADD or COP_MEM = SOU)
+									   COP_MEM = ADD or COP_MEM = SOU or
+                                       COP_MEM = LOAD)
 									  and
 									  (((COP_LI = COP or COP_LI = ADD or	--		Conflit opérande B
 										  COP_LI = SOU or COP_LI = STORE)
