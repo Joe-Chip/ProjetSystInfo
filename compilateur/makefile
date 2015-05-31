@@ -1,12 +1,13 @@
 # Definition des variables
 CFLAGS = 
-OFILES = compilateur.o fonctions.o
+OFILES = symboles.o fonctions.o sauts.o
 
 default : lexgo
+
 all : lexgo
 
 clean :
-	rm lex.yy.c y.tab.* *.o lexgo *.asm
+	rm lex.yy.c y.* *.o lexgo *.asm
 
 lexgo : source.* $(OFILES)
 	yacc -vd source.y

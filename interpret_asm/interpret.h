@@ -4,9 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Le dernier élément sert de base pointer
-#define TAILLE_TABLE_VARS 257
+// Les derniers éléments servent de base pointer et registre pour l'adresse retour
+#define TAILLE_TABLE_VARS 258
 #define BASE_POINTER 256
+#define REG_RETOUR 257
 // Pas utile d'avoir plus pour ce projet
 #define NB_LIGNES_CODE_MAX 1000
 
@@ -17,16 +18,18 @@
 #define DIV 4
 #define COP 5
 #define AFC 6
-#define JMP 7
-#define JMF 8
-#define INF 9
-#define SUP 10
-#define EQU 11
-#define PRI 12
+#define PRI 7
+#define JMP 8
+#define JMF 9
+#define INF 10
+#define SUP 11
+#define EQU 12
 #define AND 13
 #define OR 14
 #define CALL 15
 #define RET 16
+#define PUSH 17
+#define POP 18
 
 #define NO_OPERANDE 1000000000
 

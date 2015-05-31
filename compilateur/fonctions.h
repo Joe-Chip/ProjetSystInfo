@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "compilateur.h"
+#include "symboles.h"
 #include "tables.h"
 
 

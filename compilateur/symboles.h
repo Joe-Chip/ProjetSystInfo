@@ -1,5 +1,5 @@
-#ifndef COMPILATEUR_H
-#define COMPILATEUR_H
+#ifndef SYMBOLES_H
+#define SYMBOLES_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,15 +64,11 @@ extern int type_courant;
 // Flag indquant les variables gobales (passe à 0 une fois qu'elles sont finies)
 extern int vars_globales;
 
+// Compteur du niveau du bloc de code actuel
+extern int niveau_courant;
+
 // Compteur du nombre de lignes ecrites en assembleur
 extern int compteur_asm;
-
-// Table des sauts : contient l'adresse de destination de chaque saut
-int table_sauts[TAILLE_TAB_SAUTS];
-
-// Indique la position actuelle dans la table des sauts
-// On commence à 1, le premier saut du programme va obligatoirement au main
-extern int pos_tab_saut;
 
 
 /******************************************************************************
@@ -118,9 +114,9 @@ void ts_vider_dernier_niveau();
 int ts_create_tmp();
 
 /*
- * Supprime la derniere variable temporaire
+ * Supprime la derniere variable
  */
-void ts_delete_tmp();
+void ts_delete_var();
 
 /*
  * Cree une variable à partir d'un parametre de fonction
@@ -137,17 +133,4 @@ int ts_compter_inst_variables_globales();
  */
 void display_table_symb();
 
-
-/******************************************************************************
-**************** Fonctions de gestion de la table des sauts *******************
-******************************************************************************/
-
-// Ajoute un saut dans la table
-void add_saut(int destination);
-
-// Parcourt le fichier de sortie pour completer les sauts
-void completer_sauts ();
-
-// Affichage de la table des sauts, utilis pour le debug
-void afficher_table_sauts();
 #endif

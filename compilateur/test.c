@@ -9,6 +9,7 @@ int main () {
     const int j = 7;
 
     if (i > j) {
+        int k;
         i = i * 2;
     } else {
         i = 1;

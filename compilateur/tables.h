@@ -10,12 +10,15 @@
 #define TAILLE_TAB_SYMB 256
 #define TAILLE_TAB_SAUTS 256
 
+// Constante d'erreur renvoyée lorsque la table des symboles est pleine
+#define TABLE_SYMBOLE_PLEINE -100
+
 struct type_symbole {
     char * nom;
     int type;
     int is_init;
     int is_const;
-    int is_global;
+    int niveau;
 };
 
 struct type_symbole table_symboles[TAILLE_TAB_SYMB];

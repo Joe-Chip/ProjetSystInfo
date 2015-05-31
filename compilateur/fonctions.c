@@ -190,8 +190,9 @@ void display_table_fonct()
                    table_fonctions[i].tab_params[j].type,
                    table_fonctions[i].tab_params[j].is_const);
         }
+    printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
     }
-    printf("\n======================================================\n");
+    printf("======================================================\n\n");
 
 }
 

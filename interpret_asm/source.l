@@ -3,6 +3,7 @@
 #include <stdio.h>
 %}
 
+%option yylineno
 
 %%
 
@@ -12,6 +13,7 @@ MUL         {return tMUL;}
 DIV         {return tDIV;}
 AFC         {return tAFC;}
 COP         {return tCOP;}
+PRI         {return tPRI;}
 JMP         {return tJMP;}
 JMF         {return tJMF;}
 OR          {return tOR;}
@@ -21,7 +23,10 @@ SUP         {return tSUP;}
 EQU         {return tEQU;}
 CALL        {return tCALL;}
 RET         {return tRET;}
+PUSH        {return tPUSH;}
+POP         {return tPOP;}
 BP          {return tBP;}
+RT          {return tRT;}
 [0-9]+      {
                 yylval.nb = atoi(yytext);
                 return tOPERAND;
