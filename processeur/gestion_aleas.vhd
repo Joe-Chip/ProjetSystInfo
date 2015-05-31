@@ -43,6 +43,7 @@ entity gestion_aleas is
            COP_MEM : in  STD_LOGIC_VECTOR (7 downto 0);
            A_MEM : in  STD_LOGIC_VECTOR (7 downto 0);
            OUT_EN : out  STD_LOGIC;
+           OUT_LOAD : out  STD_LOGIC;
 			  OUT_Instruction : out  STD_LOGIC_VECTOR (31 downto 0));
 end gestion_aleas;
 
@@ -55,6 +56,7 @@ constant COP : STD_LOGIC_VECTOR (7 downto 0) := x"05";
 constant AFC : STD_LOGIC_VECTOR (7 downto 0) := x"06";
 -- constant OP_LOAD : STD_LOGIC_VECTOR (7 downto 0) := x"07";
 constant STORE : STD_LOGIC_VECTOR (7 downto 0) := x"08";
+constant JMP : STD_LOGIC_VECTOR (7 downto 0) := x"09";
 
 signal flag_attente : STD_LOGIC := '0';
 
@@ -88,14 +90,18 @@ begin
 									    and A_MEM = B_LI)
 									   or
 									   ((COP_LI = ADD or COP_LI = SOU)  	--		Conflit opérande C
-									    and A_MEM = C_LI)))										 
+									    and A_MEM = C_LI)))
+                                     or
+                                     (COP_LI = JMP or COP_DI = JMP or       -- JMP
+                                      COP_EX = JMP or COP_MEM = JMP)
 									 else
 						 '0';
 
 		
 	OUT_EN <= '1' when flag_attente = '1' else
 				 '0';
-				 
+	OUT_LOAD <= '1' when COP_LI = JMP else
+                '0';
 	OUT_Instruction <= x"00000000";
 
 end Behavioral;

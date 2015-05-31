@@ -117,6 +117,7 @@ architecture Behavioral of chemin_donnees is
 				 COP_MEM : in  STD_LOGIC_VECTOR (7 downto 0);
 				 A_MEM : in  STD_LOGIC_VECTOR (7 downto 0);
 				 OUT_EN : out  STD_LOGIC;
+				 OUT_LOAD : out  STD_LOGIC;
 				 OUT_Instruction : out  STD_LOGIC_VECTOR (31 downto 0));
 	end component;
 	
@@ -130,6 +131,7 @@ architecture Behavioral of chemin_donnees is
 	constant AFC : STD_LOGIC_VECTOR (7 downto 0) := x"06";
 	constant LOAD : STD_LOGIC_VECTOR (7 downto 0) := x"07";
 	constant STORE : STD_LOGIC_VECTOR (7 downto 0) := x"08";
+	constant JMP : STD_LOGIC_VECTOR (7 downto 0) := x"09";
 	
 	-- Signaux internes :
 	--		Etage LI
@@ -138,6 +140,7 @@ architecture Behavioral of chemin_donnees is
 	signal instruction_NOP : STD_LOGIC_VECTOR (31 downto 0);
 	signal instruction_choisie : STD_LOGIC_VECTOR (31 downto 0);
 	signal enable_cpt : STD_LOGIC;
+	signal load_cpt : STD_LOGIC;
 	
 	--		Etage DI
 	signal OP_DI : STD_LOGIC_VECTOR (7 downto 0);
@@ -182,9 +185,9 @@ begin
 	cpt_instructions : compteur port map(CLK => CLK,
 										 RST => RST,
 										 SENS => '1',
-										 LOAD => '0',
+										 LOAD => load_cpt,
 										 EN => enable_cpt,
-										 Din => x"00",
+										 Din => instruction_choisie(23 downto 0),
 										 Dout => compt_inst);
 										 
 	-- Etage LI : Mémoire d'instructions
@@ -329,6 +332,7 @@ begin
 											 COP_MEM => OP_MEM,
 											 A_MEM => A_MEM,
 											 OUT_EN => enable_cpt,
+											 OUT_LOAD => load_cpt,
 											 OUT_Instruction => instruction_NOP);
 
 end Behavioral;
